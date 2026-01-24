@@ -1,0 +1,16 @@
+{
+    "name": "django-tailwind-app",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "build": "tailwindcss -i ./frontend/src/input.css -o ./static/css/output.css --minify",
+        "watch": "tailwindcss -i ./frontend/src/input.css -o ./static/css/output.css --watch"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "tailwindcss": "^3.4.1"
+    }
+}

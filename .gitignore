@@ -1,5 +1,4 @@
 # Python
-
 __pycache__/
 
 # Django
@@ -22,3 +21,14 @@ venv.bak/
 # OS
 .DS_Store
 Thumbs.db
+
+# Node
+node_modules/
+npm-debug.log
+
+# Tailwind
+static/css/output.css
+
+# Docker
+Dockerfile
+docker-compose.yml
