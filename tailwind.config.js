@@ -14,7 +14,7 @@ module.exports = {
                 mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
                 sans: ['"JetBrains Mono"', 'system-ui', 'sans-serif'],
             },
-            // 3. Paleta de colores Catppuccin Mocha
+            // Paleta de colores Catppuccin Mocha
             colors: {
                 cat: {
                     base: '#1e1e2e',      // Fondo principal
@@ -22,6 +22,7 @@ module.exports = {
                     crust: '#11111b',     // El fondo más oscuro posible
                     surface0: '#313244',  // Contenedores / Tarjetas
                     surface1: '#45475a',  // Bordes suaves / Hover
+                    surface2: '#585b70',  // Hover más intenso
                     text: '#cdd6f4',      // Texto principal
                     subtext0: '#a6adc8',  // Texto secundario
                     overlay0: '#6c7086',  // Texto deshabilitado / iconos

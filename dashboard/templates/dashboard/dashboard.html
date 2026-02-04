@@ -6,66 +6,79 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FuzBoard</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+    <link rel="stylesheet" href="{% static 'css/output.css' %}?v=3">
 </head>
 
-<body class="min-h-screen bg-cat-base text-cat-text font-mono flex">
+<body class="min-h-screen bg-cat-base text-cat-text font-mono">
 
-    <aside class="w-64 bg-cat-mantle border-r border-cat-surface0 hidden md:flex flex-col">
-        <div class="p-6">
-            <h1 class="text-2xl font-bold text-cat-mauve tracking-tighter">FuzBoard<span class="text-cat-pink">.</span>
-            </h1>
-            <p class="text-xs text-cat-subtext0 mt-1">Data Analysis Hub</p>
-        </div>
+    <!-- Top Navbar -->
+    <nav class="sticky top-0 z-50 bg-cat-mantle/80 backdrop-blur-md border-b border-cat-surface0 px-4 md:px-8 py-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <!-- Left: Logo & Nav -->
+            <div class="flex items-center gap-8">
+                <a href="{% url 'dashboard' %}" class="group">
+                    <h1
+                        class="text-2xl font-bold text-cat-mauve tracking-tighter group-hover:opacity-80 transition-opacity">
+                        FuzBoard<span class="text-cat-pink">.</span>
+                    </h1>
+                </a>
 
-        <nav class="flex-1 px-4 space-y-2 mt-4">
-            <a href="#" class="flex items-center gap-3 px-4 py-3 bg-cat-surface0 text-cat-mauve rounded-lg shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect width="7" height="9" x="3" y="3" rx="1" />
-                    <rect width="7" height="5" x="14" y="3" rx="1" />
-                    <rect width="7" height="9" x="14" y="12" rx="1" />
-                    <rect width="7" height="5" x="3" y="16" rx="1" />
-                </svg>
-                <span class="font-bold">Dashboard</span>
-            </a>
-
-            <a href="#"
-                class="flex items-center gap-3 px-4 py-3 text-cat-subtext0 hover:bg-cat-surface0 hover:text-cat-text rounded-lg transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                    <polyline points="14 2 14 8 20 8" />
-                </svg>
-                <span>Documentos</span>
-            </a>
-
-            <a href="#"
-                class="flex items-center gap-3 px-4 py-3 text-cat-subtext0 hover:bg-cat-surface0 hover:text-cat-text rounded-lg transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="12" x2="12" y1="20" y2="10" />
-                    <line x1="18" x2="18" y1="20" y2="4" />
-                    <line x1="6" x2="6" y1="20" y2="16" />
-                </svg>
-                <span>Analíticas</span>
-            </a>
-        </nav>
-
-        <div class="p-4 border-t border-cat-surface0">
-            <div class="flex items-center gap-3">
+                <!-- Desktop Nav -->
                 <div
-                    class="w-10 h-10 rounded-full bg-cat-pink flex items-center justify-center text-cat-base font-bold">
-                    L</div>
-                <div>
-                    <p class="text-sm font-bold text-cat-text">LuisRdgz</p>
-                    <p class="text-xs text-cat-subtext0">Admin</p>
+                    class="hidden md:flex items-center gap-1 bg-cat-surface0/50 p-1 rounded-lg border border-cat-surface0">
+                    <a href="{% url 'dashboard' %}"
+                        class="px-4 py-1.5 rounded-md bg-cat-surface1 text-cat-text text-sm font-bold shadow-sm transition-all">
+                        Dashboard
+                    </a>
+                    <a href="#"
+                        class="px-4 py-1.5 rounded-md text-cat-subtext0 text-sm font-medium hover:text-cat-text hover:bg-cat-surface0 transition-all">
+                        Proyectos
+                    </a>
+                    <a href="#"
+                        class="px-4 py-1.5 rounded-md text-cat-subtext0 text-sm font-medium hover:text-cat-text hover:bg-cat-surface0 transition-all">
+                        Formatos
+                    </a>
+                </div>
+            </div>
+
+            <!-- User & Actions on the right -->
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-3 pl-6 border-l border-cat-surface0">
+                    <div class="text-right sm:block">
+                        <p class="text-sm font-bold text-cat-text leading-none">
+                            {{ user.username }}
+                        </p>
+                        <p class="text-xs text-cat-subtext0 mt-1">{{ user.email }}</p>
+                    </div>
+                    <div
+                        class="w-10 h-10 rounded-full bg-gradient-to-br from-cat-pink to-cat-mauve flex items-center justify-center text-cat-base font-bold shadow-lg shadow-cat-mauve/20 shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
+                            stroke="lightgray" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit"
+                            class="p-2 text-cat-subtext0 hover:text-cat-red hover:bg-cat-red/10 rounded-lg transition-all"
+                            title="Cerrar Sesión">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                                <polyline points="16 17 21 12 16 7" />
+                                <line x1="21" y1="12" x2="9" y2="12" />
+                            </svg>
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
-    </aside>
+    </nav>
 
-    <main class="flex-1 overflow-y-auto p-8">
+    <main class="max-w-7xl mx-auto p-4 md:p-8">
 
         <header class="flex justify-between items-center mb-8">
             <div>
@@ -85,12 +98,11 @@
         </header>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div
-                class="bg-cat-surface0 p-6 rounded-xl border border-cat-surface1 hover:border-cat-blue/50 transition-colors">
+            <div class="glass-card p-6 rounded-xl hover:border-cat-blue/50 transition-colors">
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-cat-subtext0 text-sm mb-1 font-bold uppercase tracking-wider">Documentos</p>
-                        <h3 class="text-3xl font-bold text-cat-blue">1,248</h3>
+                        <h3 class="text-3xl font-bold text-cat-blue">12</h3>
                     </div>
                     <div class="p-2 bg-cat-blue/10 rounded-lg text-cat-blue">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -111,8 +123,7 @@
                 </div>
             </div>
 
-            <div
-                class="bg-cat-surface0 p-6 rounded-xl border border-cat-surface1 hover:border-cat-yellow/50 transition-colors">
+            <div class="glass-card p-6 rounded-xl hover:border-cat-yellow/50 transition-colors">
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-cat-subtext0 text-sm mb-1 font-bold uppercase tracking-wider">Latencia Media</p>
@@ -131,8 +142,7 @@
                 </div>
             </div>
 
-            <div
-                class="bg-cat-surface0 p-6 rounded-xl border border-cat-surface1 hover:border-cat-red/50 transition-colors">
+            <div class="glass-card p-6 rounded-xl hover:border-cat-red/50 transition-colors">
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-cat-subtext0 text-sm mb-1 font-bold uppercase tracking-wider">Tokens</p>
@@ -154,7 +164,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-            <div class="lg:col-span-2 bg-cat-surface0 rounded-xl border border-cat-surface1 overflow-hidden">
+            <div class="lg:col-span-2 glass-card rounded-xl overflow-hidden">
                 <div class="p-6 border-b border-cat-surface1 flex justify-between items-center">
                     <h3 class="font-bold text-lg text-cat-text">Archivos Recientes</h3>
                     <button class="text-cat-blue text-sm hover:text-cat-mauve hover:underline transition-colors">Ver
@@ -238,7 +248,7 @@
 
             <div class="space-y-6">
                 <div
-                    class="bg-cat-surface0 p-6 rounded-xl border-2 border-dashed border-cat-surface1 hover:border-cat-mauve hover:bg-cat-surface0/80 transition-all cursor-pointer flex flex-col items-center justify-center text-center h-64 group">
+                    class="glass-card p-6 rounded-xl border-2 border-dashed border-cat-surface1 hover:border-cat-mauve hover:bg-cat-surface0/80 transition-all cursor-pointer flex flex-col items-center justify-center text-center h-64 group">
                     <div
                         class="p-4 bg-cat-base rounded-full group-hover:scale-110 group-hover:bg-cat-mantle transition-all mb-4">
                         <svg class="text-cat-mauve" xmlns="http://www.w3.org/2000/svg" width="32" height="32"
@@ -254,7 +264,7 @@
                     <p class="text-xs text-cat-overlay0 mt-4">Máximo 500MB</p>
                 </div>
 
-                <div class="bg-cat-surface0 p-6 rounded-xl border border-cat-surface1">
+                <div class="glass-card p-6 rounded-xl">
                     <h3 class="font-bold text-cat-text mb-4">Almacenamiento</h3>
                     <div class="w-full bg-cat-mantle rounded-full h-4 mb-2 overflow-hidden">
                         <div class="bg-cat-peach h-4 rounded-full shadow-[0_0_10px_rgba(250,179,135,0.5)]"
@@ -268,6 +278,7 @@
             </div>
         </div>
     </main>
+
 </body>
 
 </html>

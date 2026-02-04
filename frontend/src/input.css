@@ -1,3 +1,153 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom base styles */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Custom components */
+@layer components {
+
+  /* Glass morphism effect for cards */
+  .glass-card {
+    @apply bg-cat-surface0/60 backdrop-blur-xl border border-cat-surface1/30 shadow-2xl;
+  }
+
+  /* Enhanced input styles */
+  .form-input {
+    @apply w-full px-4 py-3.5 bg-cat-mantle/50 border border-cat-surface1 rounded-xl text-cat-text placeholder-cat-overlay0/70 focus:outline-none focus:ring-2 focus:ring-cat-mauve/30 focus:border-cat-mauve transition-all duration-200 font-mono;
+  }
+
+  /* Form input with hover effect */
+  .form-input-hover {
+    @apply w-full px-4 py-3.5 bg-cat-mantle/50 border border-cat-surface1 rounded-xl text-cat-text placeholder-cat-overlay0/70 focus:outline-none focus:ring-2 focus:ring-cat-mauve/30 focus:border-cat-mauve transition-all duration-200 font-mono hover:bg-cat-mantle hover:border-cat-surface2 hover:shadow-lg;
+  }
+
+  /* Enhanced button styles */
+  .btn-primary {
+    @apply w-full bg-gradient-to-r from-cat-mauve to-cat-pink text-cat-base px-6 py-3.5 rounded-xl font-bold transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-cat-mauve/25 active:scale-95 flex items-center justify-center gap-2;
+  }
+
+  .btn-secondary {
+    @apply w-full bg-cat-surface1 text-cat-text px-6 py-3.5 rounded-xl font-bold transition-all duration-300 hover:bg-cat-surface2 hover:scale-105 active:scale-95;
+  }
+
+  /* Enhanced card styles */
+  .auth-card {
+    @apply bg-cat-surface0/60 backdrop-blur-xl border border-cat-surface1/30 shadow-2xl rounded-3xl p-8 max-w-md w-full hover:shadow-cat-mauve/10 transition-shadow duration-300;
+  }
+
+  /* Logo styles */
+  .logo {
+    @apply text-4xl font-bold tracking-tighter;
+    background: linear-gradient(135deg, #cba6f7 0%, #f5c2e7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Alert/message styles */
+  .alert-success {
+    @apply p-4 rounded-xl border bg-cat-green/10 border-cat-green/30 text-cat-green backdrop-blur-sm;
+  }
+
+  .alert-error {
+    @apply p-4 rounded-xl border bg-cat-red/10 border-cat-red/30 text-cat-red backdrop-blur-sm;
+  }
+
+  .alert-info {
+    @apply p-4 rounded-xl border bg-cat-blue/10 border-cat-blue/30 text-cat-blue backdrop-blur-sm;
+  }
+
+  /* Link styles */
+  .link-primary {
+    @apply text-cat-mauve hover:text-cat-pink font-bold transition-all duration-200 hover:underline underline-offset-2;
+  }
+
+  /* Form field styles */
+  .field-group {
+    @apply space-y-2;
+  }
+
+  .field-label {
+    @apply block text-sm font-bold text-cat-subtext0 mb-2 uppercase tracking-wider;
+  }
+
+  /* Loading spinner */
+  .spinner {
+    @apply animate-spin rounded-full border-2 border-cat-mauve/20 border-t-cat-mauve;
+  }
+
+  /* Animations */
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .float-animation {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0.8;
+    }
+  }
+
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  /* Error list styling moved from register.html */
+  .errorlist {
+    @apply mt-2 text-cat-red text-sm space-y-1;
+  }
+
+  .errorlist li {
+    @apply flex items-start gap-2;
+  }
+
+  .errorlist li::before {
+    content: "•";
+    @apply text-cat-red font-bold;
+  }
+}
+
+/* Custom utilities */
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(135deg, #cba6f7 0%, #f5c2e7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .glow-mauve {
+    box-shadow: 0 0 20px rgba(203, 166, 247, 0.3);
+  }
+
+  .glow-pink {
+    box-shadow: 0 0 20px rgba(245, 194, 231, 0.3);
+  }
+}
