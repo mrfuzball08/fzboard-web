@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eliminar {{ template.name }} - FuzBoard</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/output.css' %}?v=5">
+</head>
+
+<body class="min-h-screen bg-cat-base text-cat-text font-mono flex items-center justify-center relative py-12">
+    <!-- Background decoration -->
+    <div class="absolute inset-0 bg-gradient-to-br from-cat-red/5 via-cat-base to-cat-pink/5"></div>
+    <div class="absolute top-0 left-0 w-96 h-96 bg-cat-red/10 rounded-full filter blur-3xl float-animation"></div>
+    <div class="absolute bottom-0 right-0 w-96 h-96 bg-cat-pink/10 rounded-full filter blur-3xl float-animation"
+        style="animation-delay: 3s;"></div>
+
+    <div class="relative z-10 w-full max-w-md px-4">
+        <div class="auth-card text-center">
+            <!-- Warning Icon -->
+            <div class="inline-block p-4 bg-cat-red/10 rounded-2xl mb-6">
+                <svg class="text-cat-red" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+            </div>
+
+            <h2 class="text-2xl font-bold text-cat-text mb-2">¿Eliminar formato?</h2>
+            <p class="text-cat-subtext0 mb-2">Estás a punto de eliminar el formato:</p>
+            <p class="text-cat-red font-bold text-lg mb-1">{{ template.name }}</p>
+            <p class="text-cat-overlay0 text-sm mb-6">
+                {{ template.columns.count }} columnas • Creado {{ template.created_at|date:"d M Y" }}
+            </p>
+            <p class="text-cat-subtext0 text-sm mb-8">
+                Esta acción no se puede deshacer.
+            </p>
+
+            <form method="post" class="space-y-3">
+                {% csrf_token %}
+                <button type="submit"
+                    class="w-full bg-cat-red hover:bg-cat-red/80 text-cat-base px-6 py-3.5 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    </svg>
+                    Sí, Eliminar
+                </button>
+                <a href="{% url 'template_detail' template.pk %}"
+                    class="block w-full bg-cat-surface1 text-cat-text px-6 py-3.5 rounded-xl font-bold transition-all hover:bg-cat-surface2 hover:scale-105 active:scale-95 text-center">
+                    Cancelar
+                </a>
+            </form>
+        </div>
+    </div>
+
+</body>
+
+</html>

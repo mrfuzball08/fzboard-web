@@ -60,3 +60,47 @@ class LoginForm(forms.Form):
         'placeholder': 'Contraseña',
         'autocomplete': 'current-password'
     }))
+
+
+class TableTemplateForm(forms.ModelForm):
+    class Meta:
+        from .models import TableTemplate
+        model = TableTemplate
+        fields = ['name', 'description']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-input-hover',
+                'placeholder': 'Nombre del formato',
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-input-hover',
+                'placeholder': 'Descripción del formato (opcional)',
+                'rows': 3,
+            }),
+        }
+        labels = {
+            'name': 'Nombre del Formato',
+            'description': 'Descripción',
+        }
+
+
+class TemplateColumnForm(forms.ModelForm):
+    class Meta:
+        from .models import TemplateColumn
+        model = TemplateColumn
+        fields = ['name', 'data_type', 'order']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-input-hover',
+                'placeholder': 'Nombre de columna',
+            }),
+            'data_type': forms.Select(attrs={
+                'class': 'form-input-hover',
+            }),
+            'order': forms.HiddenInput(),
+        }
+        labels = {
+            'name': 'Encabezado',
+            'data_type': 'Tipo de Dato',
+            'order': '',
+        }

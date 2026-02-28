@@ -9,7 +9,7 @@ module.exports = {
     ],
     theme: {
         extend: {
-            // JetBrains Mono como la "mono" por defecto
+            // JetBrains Mono como la fuente "mono" por defecto
             fontFamily: {
                 mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
                 sans: ['"JetBrains Mono"', 'system-ui', 'sans-serif'],

@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formatos - FuzBoard</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/output.css' %}?v=5">
+</head>
+
+<body class="min-h-screen bg-cat-base text-cat-text font-mono">
+
+    {% with active_nav='formatos' %}
+    {% include 'dashboard/_navbar.html' %}
+    {% endwith %}
+
+    <main class="max-w-6xl mx-auto p-4 md:p-8">
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="mb-6 space-y-3">
+            {% for message in messages %}
+            <div
+                class="{% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %} flex items-center gap-3">
+                {% if message.tags == 'success' %}
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="shrink-0">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                {% endif %}
+                <span class="text-sm font-medium">{{ message }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="text-3xl font-bold text-cat-text">Formatos</h2>
+                <p class="text-cat-subtext0 mt-1">Gestiona tus plantillas de tabla para exportar CSV.</p>
+            </div>
+            <a href="{% url 'template_create' %}"
+                class="bg-cat-mauve hover:bg-cat-pink text-cat-base px-5 py-2.5 rounded-lg font-bold transition-colors flex items-center gap-2 shadow-lg shadow-cat-mauve/20">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Nuevo Formato
+            </a>
+        </header>
+
+        <!-- Search Bar -->
+        <form method="get" action="{% url 'template_list' %}" class="mb-6">
+            <div class="relative">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="absolute left-4 top-1/2 -translate-y-1/2 text-cat-overlay0">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <input type="text" name="q" value="{{ query }}" placeholder="Buscar formatos por nombre..."
+                    class="w-full pl-11 pr-10 py-3 bg-cat-surface0/50 border border-cat-surface1/40 rounded-xl text-cat-text text-sm placeholder-cat-overlay0/60 focus:outline-none focus:ring-2 focus:ring-cat-mauve/30 focus:border-cat-mauve/50 transition-all font-mono">
+                {% if query %}
+                <a href="{% url 'template_list' %}"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-cat-overlay0 hover:text-cat-red transition-colors p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </a>
+                {% endif %}
+            </div>
+        </form>
+
+        {% if templates %}
+        <!-- Stats Bar -->
+        <div class="glass-card rounded-xl p-4 mb-6 flex items-center gap-6">
+            <div class="flex items-center gap-2 text-sm">
+                <div class="p-1.5 bg-cat-mauve/10 rounded-lg text-cat-mauve">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                        <line x1="3" y1="9" x2="21" y2="9" />
+                        <line x1="9" y1="21" x2="9" y2="9" />
+                    </svg>
+                </div>
+                <span class="text-cat-subtext0">Total:</span>
+                <span class="font-bold text-cat-text">{{ templates|length }} formatos</span>
+            </div>
+        </div>
+
+        <!-- Template Mosaic Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for tmpl in templates %}
+            <a href="{% url 'template_detail' tmpl.pk %}"
+                class="glass-card rounded-xl overflow-hidden hover:border-cat-mauve/40 transition-all group cursor-pointer hover:shadow-lg hover:shadow-cat-mauve/5 block relative">
+
+                <!-- Card Body -->
+                <div class="p-5">
+                    <!-- Top: Icon + Name -->
+                    <div class="flex items-start gap-3 mb-3">
+                        <div
+                            class="p-2.5 bg-cat-mauve/10 rounded-xl text-cat-mauve shrink-0 group-hover:bg-cat-mauve/20 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                <line x1="3" y1="9" x2="21" y2="9" />
+                                <line x1="9" y1="21" x2="9" y2="9" />
+                            </svg>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3
+                                class="text-base font-bold text-cat-text truncate group-hover:text-cat-mauve transition-colors leading-tight">
+                                {{ tmpl.name }}
+                            </h3>
+                            {% if tmpl.description %}
+                            <p class="text-cat-overlay0 text-xs mt-1 line-clamp-2 leading-relaxed">
+                                {{ tmpl.description }}
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Meta Tags -->
+                    <div class="flex items-center gap-2 mt-4">
+                        <span
+                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-cat-blue/10 text-cat-blue text-[11px] font-bold">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <line x1="12" y1="1" x2="12" y2="23" />
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                            </svg>
+                            {{ tmpl.columns.count }} cols
+                        </span>
+                        <span
+                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-cat-surface0/60 text-cat-overlay0 text-[11px] font-medium">
+                            {{ tmpl.updated_at|date:"d M Y" }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Card Footer: Actions -->
+                <div class="flex items-center justify-end gap-1 px-4 py-2.5 border-t border-cat-surface1/30 bg-cat-mantle/30 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onclick="event.preventDefault(); event.stopPropagation();">
+                    <a href="{% url 'template_download_csv' tmpl.pk %}"
+                        class="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-cat-green hover:bg-cat-green/10 rounded-md transition-all"
+                        title="Descargar CSV">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" x2="12" y1="15" y2="3" />
+                        </svg>
+                        CSV
+                    </a>
+                    <a href="{% url 'template_delete' tmpl.pk %}"
+                        class="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-cat-red/70 hover:text-cat-red hover:bg-cat-red/10 rounded-md transition-all"
+                        title="Eliminar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                        </svg>
+                        Eliminar
+                    </a>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <!-- Empty State -->
+        <div class="flex flex-col items-center justify-center py-20">
+            <div class="p-5 bg-cat-surface0/60 rounded-2xl border border-cat-surface1/30 mb-6">
+                <svg class="text-cat-mauve" xmlns="http://www.w3.org/2000/svg" width="36" height="36"
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <line x1="3" y1="9" x2="21" y2="9" />
+                    <line x1="9" y1="21" x2="9" y2="9" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold text-cat-text mb-1.5">No tienes formatos aún</h3>
+            <p class="text-cat-subtext0 text-sm text-center max-w-xs leading-relaxed">
+                Usa el botón <span class="text-cat-mauve font-bold">+ Nuevo Formato</span> para definir
+                la estructura de tus tablas y exportar CSV.
+            </p>
+        </div>
+        {% endif %}
+
+    </main>
+
+</body>
+
+</html>
