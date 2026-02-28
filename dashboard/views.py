@@ -127,16 +127,44 @@ def template_create(request):
 
 @login_required
 def template_detail(request, pk):
-    """View details of a specific template."""
+    """View details and edit a specific template."""
+    from django.forms import inlineformset_factory
     template = get_object_or_404(TableTemplate, pk=pk, owner=request.user)
+    
+    ColumnFormSet = inlineformset_factory(
+        TableTemplate,
+        TemplateColumn,
+        form=TemplateColumnForm,
+        extra=1,
+        can_delete=True,
+    )
+
+    if request.method == 'POST':
+        form = TableTemplateForm(request.POST, instance=template)
+        formset = ColumnFormSet(request.POST, instance=template)
+        
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            messages.success(request, f'¡Formato "{template.name}" actualizado exitosamente!')
+            return redirect('template_detail', pk=template.pk)
+        else:
+            messages.error(request, 'Por favor corrige los errores en el formulario.')
+    else:
+        form = TableTemplateForm(instance=template)
+        formset = ColumnFormSet(instance=template)
+
     columns = template.columns.all()
     owner = template.owner
     owner_name = owner.get_full_name() or owner.username
+    
     return render(request, 'dashboard/template_detail.html', {
         'template': template,
         'columns': columns,
         'column_count': columns.count(),
         'owner_name': owner_name,
+        'form': form,
+        'formset': formset,
     })
 
 

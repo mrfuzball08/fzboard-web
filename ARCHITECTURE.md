@@ -1,4 +1,4 @@
-# 📐 FzBoard — Architecture & Project Documentation
+# FzBoard — Architecture & Project Documentation
 
 > **FzBoard** is a web-based data analysis dashboard built with **Django 6.0** and **Tailwind CSS 3.4**, styled with the **Catppuccin Mocha** color palette and designed for Docker deployment.
 >
