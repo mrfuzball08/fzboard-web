@@ -21,6 +21,7 @@
     @apply bg-cat-surface0/60 backdrop-blur-xl border border-cat-surface1/30 shadow-2xl;
   }
 
+
   /* Enhanced input styles */
   .form-input {
     @apply w-full px-4 py-3.5 bg-cat-mantle/50 border border-cat-surface1 rounded-xl text-cat-text placeholder-cat-overlay0/70 focus:outline-none focus:ring-2 focus:ring-cat-mauve/30 focus:border-cat-mauve transition-all duration-200 font-mono;
