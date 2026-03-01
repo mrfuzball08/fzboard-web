@@ -183,7 +183,7 @@ This allows **hot reloading** of both CSS (Tailwind) and Python (Django) during 
 
 | Setting                            | Value                             | Notes                                 |
 |------------------------------------|-----------------------------------|---------------------------------------|
-| `SECRET_KEY`                       | Insecure dev key                  | ⚠️ Must be replaced in production     |
+| `SECRET_KEY`                       | Insecure dev key                  | Must be replaced in production        |
 | `DEBUG`                            | `True`                            | Development mode                      |
 | `ALLOWED_HOSTS`                    | `['localhost', '127.0.0.1', '*']` | Open for development                  |
 | `AUTH_USER_MODEL`                  | `'dashboard.User'`                | Custom user model                     |
@@ -288,15 +288,15 @@ All form widgets use the `form-input-hover` CSS class for consistent Catppuccin 
 
 | URL Pattern                    | View Function            | Name                | Auth |
 |--------------------------------|--------------------------|---------------------|------|
-| `/`                            | `dashboard()`            | `dashboard`         | ✅    |
-| `/login/`                      | `login_view()`           | `login`             | ❌    |
-| `/register/`                   | `register_view()`        | `register`          | ❌    |
-| `/logout/`                     | `logout_view()`          | `logout`            | ❌    |
-| `/formatos/`                   | `template_list()`        | `template_list`     | ✅    |
-| `/formatos/crear/`             | `template_create()`      | `template_create`   | ✅    |
-| `/formatos/<pk>/`              | `template_detail()`      | `template_detail`   | ✅    |
-| `/formatos/<pk>/eliminar/`     | `template_delete()`      | `template_delete`   | ✅    |
-| `/formatos/<pk>/descargar/`    | `template_download_csv()`| `template_download_csv` | ✅ |
+| `/`                            | `dashboard()`            | `dashboard`         | Yes  |
+| `/login/`                      | `login_view()`           | `login`             | No   |
+| `/register/`                   | `register_view()`        | `register`          | No   |
+| `/logout/`                     | `logout_view()`          | `logout`            | No   |
+| `/formatos/`                   | `template_list()`        | `template_list`     | Yes  |
+| `/formatos/crear/`             | `template_create()`      | `template_create`   | Yes  |
+| `/formatos/<pk>/`              | `template_detail()`      | `template_detail`   | Yes  |
+| `/formatos/<pk>/eliminar/`     | `template_delete()`      | `template_delete`   | Yes  |
+| `/formatos/<pk>/descargar/`    | `template_download_csv()`| `template_download_csv` | Yes |
 
 **View details:**
 
@@ -591,15 +591,15 @@ Browser Request
 │    └── /*                → dashboard/urls.py         │
 │                                                      │
 │  dashboard/urls.py                                   │
-│    ├── /                 → dashboard()         [🔒]  │
-│    ├── /login/           → login_view()              │
-│    ├── /register/        → register_view()           │
-│    ├── /logout/          → logout_view()             │
-│    ├── /formatos/        → template_list()     [🔒]  │
-│    ├── /formatos/crear/  → template_create()   [🔒]  │
-│    ├── /formatos/<pk>/   → template_detail()   [🔒]  │
-│    ├── /formatos/<pk>/eliminar/  → template_delete()   [🔒]  │
-│    └── /formatos/<pk>/descargar/ → template_download_csv() [🔒]│
+│    ├── /                 → dashboard()         [auth] │
+│    ├── /login/           → login_view()               │
+│    ├── /register/        → register_view()            │
+│    ├── /logout/          → logout_view()              │
+│    ├── /formatos/        → template_list()     [auth] │
+│    ├── /formatos/crear/  → template_create()   [auth] │
+│    ├── /formatos/<pk>/   → template_detail()   [auth] │
+│    ├── /formatos/<pk>/eliminar/  → template_delete()   [auth] │
+│    └── /formatos/<pk>/descargar/ → template_download_csv() [auth]│
 │                                                      │
 │  Template Rendering                                  │
 │    └── dashboard/templates/dashboard/*.html           │
