@@ -6,26 +6,650 @@
  | |     / /__ | |_) | |_| |/ ____ \| | \ \| |__| |
  |_|    /_____||____/ \___//_/    \_\_|  \_\_____/ 
 ```
-# Fzboard Web
+---
+# FzBoard Web
 
-A web-based dashboard application built with Django and Tailwind CSS.
-Note: The dashboard interface is currently a mockup.
+> A web-based data analysis dashboard built with **Django 6.0** and **Tailwind CSS 3.4**, styled with the **Catppuccin Mocha** color palette and designed for Docker deployment.
+>
+> *The dashboard interface is currently a **mockup** — most data shown on the dashboard page is hardcoded. Template management (Formatos) is fully functional.*
+
+---
+
+## Table of Contents
+
+1. [Tech Stack](#tech-stack)
+2. [Project Structure](#project-structure)
+3. [Infrastructure & Deployment](#infrastructure--deployment)
+4. [Django Configuration](#django-configuration-fzboard)
+5. [Application: `dashboard`](#application-dashboard)
+   - [Models](#models)
+   - [Forms](#forms)
+   - [Views & URL Routing](#views--url-routing)
+   - [Templates](#templates)
+   - [Utilities](#utilities)
+6. [Template Management (Formatos)](#template-management-formatos)
+7. [Frontend & Styling](#frontend--styling)
+   - [Tailwind CSS Pipeline](#tailwind-css-pipeline)
+   - [Design System](#design-system)
+   - [Custom Components (CSS)](#custom-components-css)
+   - [Custom Utilities (CSS)](#custom-utilities-css)
+8. [Authentication Flow](#authentication-flow)
+9. [Testing](#testing)
+   - [Test Structure](#test-structure)
+   - [Volume Tests](#volume-tests)
+   - [Running Tests](#running-tests)
+10. [Dashboard (Mockup)](#dashboard-mockup)
+11. [Diagrams](#diagrams)
+
+---
 
 ## Tech Stack
 
-- Python (Django 6.0)
-- Tailwind CSS
-- SQLite
-- Docker
+| Layer            | Technology                    | Version |
+|------------------|-------------------------------|---------|
+| Backend          | Python / Django               | 6.0.1   |
+| Database         | SQLite                        | —       |
+| CSS Framework    | Tailwind CSS                  | 3.4.1   |
+| Font             | JetBrains Mono                | —       |
+| Color Palette    | Catppuccin Mocha              | —       |
+| Runtime          | Python 3.12 / Node.js 20 LTS | —       |
+| Containerization | Docker + Docker Compose       | —       |
+
+### Python Dependencies (`requirements.txt`)
+
+```
+asgiref==3.11.0
+Django==6.0.1
+pandas==3.0.1
+sqlparse==0.5.5
+tzdata==2025.3
+```
+
+### Node Dependencies (`package.json`)
+
+```
+tailwindcss ^3.4.1  (devDependency)
+```
+
+---
 
 ## Project Structure
 
-- dashboard/: Core application logic and views
-- fzboard/: Project configuration
-- frontend/: Tailwind CSS source files
-- static/: Compiled assets
+```
+fzboard-web/
+├── fzboard/                        # Django project configuration
+│   ├── __init__.py
+│   ├── settings.py                 # Main settings (DB, apps, auth, etc.)
+│   ├── urls.py                     # Root URL configuration
+│   ├── asgi.py                     # ASGI entry point
+│   └── wsgi.py                     # WSGI entry point
+│
+├── dashboard/                      # Main Django application
+│   ├── __init__.py
+│   ├── admin.py                    # Admin registration (User, TableTemplate, TemplateColumn)
+│   ├── apps.py                     # App config (DashboardConfig)
+│   ├── file_reading.py             # CSV/Excel → DataFrame utility
+│   ├── forms.py                    # Auth forms + Template/Column forms
+│   ├── models.py                   # User, TableTemplate, TemplateColumn
+│   ├── urls.py                     # App-level URL routes (auth + template CRUD)
+│   ├── views.py                    # View functions (auth + template management)
+│   ├── migrations/
+│   │   ├── __init__.py
+│   │   ├── 0001_initial.py         # Custom User model
+│   │   └── 0002_tabletemplate_templatecolumn.py
+│   ├── tests/                      # Test suite (44 tests)
+│   │   ├── __init__.py             # Imports all test modules
+│   │   ├── test_models.py          # Model CRUD, constraints, cascades
+│   │   ├── test_views.py           # View auth, search, ownership, timing
+│   │   └── test_volume.py          # Volume/stress tests at 4 data scales
+│   └── templates/
+│       └── dashboard/
+│           ├── _navbar.html        # Shared navigation bar partial
+│           ├── dashboard.html      # Main dashboard page (mockup)
+│           ├── login.html          # Login page
+│           ├── register.html       # Registration page
+│           ├── templates_list.html # Template listing with search
+│           ├── template_create.html# New template creation form
+│           ├── template_detail.html# Template detail + inline edit
+│           └── template_delete.html# Delete confirmation page
+│
+├── frontend/                       # Tailwind CSS source
+│   └── src/
+│       └── input.css               # Tailwind directives + custom components
+│
+├── static/                         # Compiled static assets (output)
+│   └── css/
+│       └── output.css              # ← Generated by Tailwind (gitignored)
+│
+├── manage.py                       # Django management script
+├── Dockerfile                      # Docker image definition
+├── docker-compose.yml              # Docker Compose service definition
+├── start.sh                        # Startup script (Tailwind watch + Django server)
+├── package.json                    # Node.js / Tailwind config
+├── tailwind.config.js              # Tailwind theme, colors, fonts
+├── requirements.txt                # Python dependencies
+├── db.sqlite3                      # SQLite database (gitignored)
+├── .gitignore                      # Git ignore rules
+└── README.md                       # This file
+```
 
-## Getting Started
+---
 
-> [!NOTE]
-> This project is currently under development, the dashboard interface is currently a mockup. The project is intended to be used with Docker.   I will add the docker-compose.yml, Dockerfile, settings.py and .env.example files soon.
+## Infrastructure & Deployment
+
+### Docker
+
+The application is containerized using a **Dockerfile** based on `python:3.12-slim`:
+
+1. **System dependencies** — Installs `curl`, `build-essential`, `libpq-dev`, and **Node.js 20 LTS** (via NodeSource).
+2. **Python dependencies** — Copies `requirements.txt` and runs `pip install`.
+3. **Node dependencies** — Copies `package.json` and runs `npm install`.
+4. **Tailwind build** — Runs `npm run build` to compile CSS.
+5. **Entrypoint** — Runs `start.sh` which launches Tailwind in watch mode and the Django dev server.
+
+**Exposed port:** `8000`
+
+### Docker Compose (`docker-compose.yml`)
+
+```yaml
+services:
+  web:
+    build: .
+    command: bash ./start.sh
+    volumes:
+      - .:/app                  # Bind mount for live code changes
+      - /app/node_modules       # Prevent overwriting node_modules
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=1
+```
+
+### Startup Script (`start.sh`)
+
+```bash
+#!/bin/bash
+npm run watch &               # Tailwind CSS watcher (background)
+python manage.py runserver 0.0.0.0:8000  # Django dev server (foreground)
+```
+
+This allows **hot reloading** of both CSS (Tailwind) and Python (Django) during development.
+
+---
+
+## Django Configuration (`fzboard/`)
+
+### `settings.py` — Key Configuration
+
+| Setting                            | Value                             | Notes                                 |
+|------------------------------------|-----------------------------------|---------------------------------------|
+| `SECRET_KEY`                       | Insecure dev key                  | ⚠️ Must be replaced in production     |
+| `DEBUG`                            | `True`                            | Development mode                      |
+| `ALLOWED_HOSTS`                    | `['localhost', '127.0.0.1', '*']` | Open for development                  |
+| `AUTH_USER_MODEL`                  | `'dashboard.User'`                | Custom user model                     |
+| `DATABASES`                        | SQLite (`db.sqlite3`)             | File-based database                   |
+| `STATIC_URL`                       | `/static/`                        | Static file URL prefix                |
+| `STATICFILES_DIRS`                 | `[BASE_DIR / "static"]`           | Points to compiled Tailwind output    |
+| `LOGIN_URL`                        | `/login/`                         | Redirect target for `@login_required` |
+| `LOGIN_REDIRECT_URL`              | `/`                               | After login → dashboard               |
+| `LOGOUT_REDIRECT_URL`             | `/login/`                         | After logout → login page             |
+| `SESSION_COOKIE_AGE`              | `3600` (1 hour)                   | Session timeout                       |
+| `SESSION_EXPIRE_AT_BROWSER_CLOSE` | `True`                            | Sessions die when browser closes      |
+
+### `urls.py` — Root URL Config
+
+```python
+urlpatterns = [
+    path('admin/', admin.site.urls),       # Django admin panel
+    path('', include('dashboard.urls')),   # All app routes
+]
+```
+
+All traffic (except `/admin/`) is delegated to the `dashboard` app.
+
+---
+
+## Application: `dashboard`
+
+The `dashboard` is the single Django app containing all application logic.
+
+### Models
+
+**`dashboard/models.py`** — 3 models:
+
+#### `User`
+
+```python
+class User(AbstractUser):
+    pass
+```
+
+- Extends Django's `AbstractUser` with no additional fields (yet).
+- Registered as the project's `AUTH_USER_MODEL`.
+- Pattern allows easy future extension (profiles, roles, etc.).
+
+#### `TableTemplate`
+
+```python
+class TableTemplate(models.Model):
+    name        = CharField(max_length=255)
+    description = TextField(blank=True, default='')
+    owner       = ForeignKey(User, on_delete=CASCADE, related_name='templates')
+    created_at  = DateTimeField(auto_now_add=True)
+    updated_at  = DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-updated_at']
+        unique_together = ['name', 'owner']
+```
+
+- Represents a user-defined CSV format with named columns.
+- Scoped per user via `owner` foreign key (cascade delete).
+- Unique constraint prevents duplicate template names per user.
+
+#### `TemplateColumn`
+
+```python
+class TemplateColumn(models.Model):
+    DATA_TYPE_CHOICES = [
+        ('text', 'Texto'), ('integer', 'Entero'), ('float', 'Decimal'),
+        ('date', 'Fecha'), ('boolean', 'Booleano'),
+        ('email', 'Correo Electrónico'), ('url', 'URL'),
+    ]
+    template  = ForeignKey(TableTemplate, on_delete=CASCADE, related_name='columns')
+    name      = CharField(max_length=255)
+    data_type = CharField(max_length=20, choices=DATA_TYPE_CHOICES, default='text')
+    order     = PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+```
+
+- Defines individual columns within a `TableTemplate`.
+- Supports 7 data types.
+- Ordered by the `order` field for consistent column positioning.
+
+### Forms
+
+**`dashboard/forms.py`** — 4 forms:
+
+| Form                    | Type           | Purpose                                    |
+|-------------------------|----------------|--------------------------------------------|
+| `CustomUserCreationForm`| `UserCreationForm` | User registration (6 fields)           |
+| `LoginForm`             | `Form`         | Username + password authentication         |
+| `TableTemplateForm`     | `ModelForm`    | Template name and description editing      |
+| `TemplateColumnForm`    | `ModelForm`    | Column name, data type, and order editing  |
+
+All form widgets use the `form-input-hover` CSS class for consistent Catppuccin styling.
+
+### Views & URL Routing
+
+**`dashboard/urls.py`** — 9 routes:
+
+| URL Pattern                    | View Function            | Name                | Auth |
+|--------------------------------|--------------------------|---------------------|------|
+| `/`                            | `dashboard()`            | `dashboard`         | ✅    |
+| `/login/`                      | `login_view()`           | `login`             | ❌    |
+| `/register/`                   | `register_view()`        | `register`          | ❌    |
+| `/logout/`                     | `logout_view()`          | `logout`            | ❌    |
+| `/formatos/`                   | `template_list()`        | `template_list`     | ✅    |
+| `/formatos/crear/`             | `template_create()`      | `template_create`   | ✅    |
+| `/formatos/<pk>/`              | `template_detail()`      | `template_detail`   | ✅    |
+| `/formatos/<pk>/eliminar/`     | `template_delete()`      | `template_delete`   | ✅    |
+| `/formatos/<pk>/descargar/`    | `template_download_csv()`| `template_download_csv` | ✅ |
+
+**View details:**
+
+| View                    | Methods   | Behavior                                                                |
+|-------------------------|-----------|-------------------------------------------------------------------------|
+| `dashboard()`           | GET       | Renders the dashboard mockup. `@login_required`.                        |
+| `register_view()`       | GET/POST  | Registration form → auto-login → redirect to `/`.                       |
+| `login_view()`          | GET/POST  | Login form → authenticate → redirect to `/`.                            |
+| `logout_view()`         | Any       | Logout → redirect to `/login/`.                                         |
+| `template_list()`       | GET       | Lists user's templates. Supports `?q=` search filter.                   |
+| `template_create()`     | GET/POST  | Create template + columns via `modelformset_factory`.                   |
+| `template_detail()`     | GET/POST  | View template details + **inline editing** via `inlineformset_factory`. |
+| `template_delete()`     | GET/POST  | Confirmation page → delete on POST.                                     |
+| `template_download_csv()`| GET      | Generates and downloads a CSV file with column headers + type hints.    |
+
+> **Localization:** All user-facing messages are in **Spanish**.
+
+### Templates
+
+All templates load Tailwind CSS via `{% static 'css/output.css' %}` and share a common navigation bar via the `_navbar.html` partial.
+
+| Template              | Purpose                                                        |
+|-----------------------|----------------------------------------------------------------|
+| `_navbar.html`        | Shared sticky navbar (logo, nav tabs, user info, logout)       |
+| `login.html`          | Glassmorphism login card with animated gradient background     |
+| `register.html`       | 6-field registration form with 2-column responsive grid        |
+| `dashboard.html`      | Dashboard mockup (stats, file table, upload zone, storage bar) |
+| `templates_list.html` | Template grid with search, glassmorphism cards, column counts  |
+| `template_create.html`| New template form with dynamic column editor (JS formset)      |
+| `template_detail.html`| Template detail view + toggleable inline edit mode             |
+| `template_delete.html`| Delete confirmation page with warning styling                  |
+
+### Utilities
+
+**`dashboard/file_reading.py`**
+
+```python
+def read_file_to_dataframe(uploaded_file_path) -> pd.DataFrame
+```
+
+- Reads **CSV** or **Excel** (`.xlsx`, `.xls`) files → pandas DataFrame.
+- Raises `ValueError` for unsupported file types.
+- **Not yet integrated** into any view — prepared for future file upload features.
+
+---
+
+## Template Management (Formatos)
+
+The template management system is the primary **functional feature** of the application. It enables users to define reusable CSV column structures.
+
+### Workflow
+
+```
+┌─────────────┐    ┌──────────────────┐    ┌────────────────────┐
+│ /formatos/  │───▶│ /formatos/crear/ │───▶│ /formatos/<pk>/    │
+│ List view   │    │ Create form      │    │ Detail + Inline    │
+│ (search, grid)   │ (name, desc,    │    │ Edit mode          │
+└─────────────┘    │  columns)        │    └────────────────────┘
+                   └──────────────────┘         │          │
+                                                │          │
+                                          ┌─────▼───┐  ┌───▼────────────┐
+                                          │ Delete  │  │ Download CSV   │
+                                          │ Confirm │  │ (headers +     │
+                                          └─────────┘  │  type hints)   │
+                                                       └────────────────┘
+```
+
+### Key Features
+
+- **Template CRUD** — Full create, read, update, delete lifecycle.
+- **Inline Editing** — Edit template name, description, and columns directly from the detail page via a toggleable edit mode.
+- **Dynamic Column Editor** — JavaScript-driven add/remove columns with real-time numbering and counter updates.
+- **CSV Export** — Download templates as `.csv` files with UTF-8 BOM for Excel compatibility.
+- **Per-User Isolation** — Users only see and manage their own templates.
+- **Column Types** — 7 supported data types: Texto, Entero, Decimal, Fecha, Booleano, Correo Electrónico, URL.
+
+### Data Model Relationships
+
+```
+User (1) ──────── (N) TableTemplate (1) ──────── (N) TemplateColumn
+  │                      │                                │
+  │ CASCADE              │ name (unique per user)          │ name
+  │                      │ description                     │ data_type (7 choices)
+  │                      │ created_at / updated_at         │ order
+  └──────────────────────┘                                └──────────────────
+```
+
+---
+
+## Frontend & Styling
+
+### Tailwind CSS Pipeline
+
+```
+frontend/src/input.css  →  [tailwindcss]  →  static/css/output.css
+```
+
+| NPM Script | Command                                                                       | Purpose           |
+|------------|-------------------------------------------------------------------------------|--------------------|
+| `build`    | `tailwindcss -i ./frontend/src/input.css -o ./static/css/output.css --minify` | Production build   |
+| `watch`    | `tailwindcss -i ./frontend/src/input.css -o ./static/css/output.css --watch`  | Development watcher|
+
+**Tailwind content scanning** (`tailwind.config.js`):
+
+```javascript
+content: [
+    './templates/**/*.html',
+    './**/templates/**/*.html',
+    './static/**/*.js',
+    './**/forms.py',
+]
+```
+
+### Design System
+
+The project uses the **Catppuccin Mocha** color scheme configured in `tailwind.config.js`:
+
+| Token          | Hex       | Usage                        |
+|----------------|-----------|------------------------------|
+| `cat-base`     | `#1e1e2e` | Main background              |
+| `cat-mantle`   | `#181825` | Sidebars / darker backgrounds|
+| `cat-crust`    | `#11111b` | Darkest background           |
+| `cat-surface0` | `#313244` | Cards / containers           |
+| `cat-surface1` | `#45475a` | Soft borders / hover         |
+| `cat-surface2` | `#585b70` | Intense hover                |
+| `cat-text`     | `#cdd6f4` | Primary text                 |
+| `cat-subtext0` | `#a6adc8` | Secondary text               |
+| `cat-overlay0` | `#6c7086` | Disabled text / icons        |
+| `cat-mauve`    | `#cba6f7` | **Primary accent** (purple)  |
+| `cat-blue`     | `#89b4fa` | Information                  |
+| `cat-green`    | `#a6e3a1` | Success                      |
+| `cat-yellow`   | `#f9e2af` | Warning                      |
+| `cat-peach`    | `#fab387` | Soft orange                  |
+| `cat-red`      | `#f38ba8` | Error / danger               |
+| `cat-pink`     | `#f5c2e7` | Secondary accent             |
+
+**Typography:** JetBrains Mono — used for both `font-mono` and `font-sans`.
+
+### Custom Components (CSS)
+
+Defined in `frontend/src/input.css` under `@layer components`:
+
+| Class              | Description                                                 |
+|--------------------|-------------------------------------------------------------|
+| `.glass-card`      | Glassmorphism card (semi-transparent bg + backdrop blur)     |
+| `.form-input`      | Base form input styling (dark bg, rounded, focus ring)       |
+| `.form-input-hover`| Form input with hover effects (bg change, border, shadow)    |
+| `.btn-primary`     | Gradient button (mauve → pink), scale-on-hover              |
+| `.btn-secondary`   | Solid surface button with hover scale                       |
+| `.auth-card`       | Auth page card (glassmorphism + max-width + hover shadow)   |
+| `.logo`            | Gradient text logo (mauve → pink)                           |
+| `.alert-success`   | Success message banner (green tinted)                       |
+| `.alert-error`     | Error message banner (red tinted)                           |
+| `.alert-info`      | Info message banner (blue tinted)                           |
+| `.link-primary`    | Styled link (mauve → pink on hover, underline animation)    |
+| `.field-group`     | Form field wrapper with spacing                             |
+| `.field-label`     | Label styling (small, bold, uppercase, tracking)            |
+| `.spinner`         | Animated loading spinner                                    |
+| `.float-animation` | Vertical floating animation (6s cycle)                      |
+| `.pulse-glow`      | Pulsing opacity animation (2s cycle)                        |
+| `.errorlist`       | Django form error list styling (red, small, bulleted)       |
+
+### Custom Utilities (CSS)
+
+| Class            | Description                                            |
+|------------------|--------------------------------------------------------|
+| `.text-gradient` | Gradient text (mauve → pink), clip-to-text effect      |
+| `.glow-mauve`    | Box shadow glow in mauve                               |
+| `.glow-pink`     | Box shadow glow in pink                                |
+
+---
+
+## Authentication Flow
+
+```
+┌────────────────┐     ┌─────────────────┐     ┌──────────────────┐
+│  /login/       │────▶│  Authenticate   │────▶│  / (Dashboard)   │
+│  (LoginForm)   │     │  (Django Auth)  │     │  @login_required │
+└────────────────┘     └─────────────────┘     └──────────────────┘
+        ▲                                              │
+        │  redirect                        logout (POST)
+        ▼                                              ▼
+┌────────────────┐                             ┌──────────────────┐
+│  /register/    │                             │  /logout/        │
+│  (UserCreation │────▶ auto-login ───────────▶│  redirect →      │
+│   Form)        │                             │  /login/         │
+└────────────────┘                             └──────────────────┘
+```
+
+1. **Unauthenticated users** accessing `/` are redirected to `/login/`.
+2. **Registration** creates a user, auto-logs them in, and redirects to the dashboard.
+3. **Login** authenticates against the `User` model and redirects to `/`.
+4. **Logout** terminates the session and redirects to `/login/`.
+5. **Sessions expire** after 1 hour or when the browser is closed.
+6. **Password validation** via Django built-in validators.
+
+---
+
+## Testing
+
+### Test Structure
+
+The test suite lives in `dashboard/tests/` with **44 total tests** across 3 modules:
+
+```
+dashboard/tests/
+├── __init__.py        # Re-exports all test classes
+├── test_models.py     # 10 tests — Model CRUD, constraints, cascades
+├── test_views.py      #  6 tests — View auth, search, isolation, timing
+└── test_volume.py     # 28 tests — Volume/stress at 4 data scales
+```
+
+#### `test_models.py` — Model Tests
+
+| Test Class           | Tests | Covers                                                  |
+|----------------------|-------|---------------------------------------------------------|
+| `UserModelTests`     | 4     | User creation, listing, `__str__`, query response time  |
+| `TemplateModelTests` | 6     | `__str__`, column ordering, unique constraint, cascade deletes |
+
+#### `test_views.py` — View Tests
+
+| Test Class               | Tests | Covers                                                     |
+|--------------------------|-------|------------------------------------------------------------|
+| `TemplateListViewTests`  | 6     | Login redirect, authenticated access, ownership isolation, search filter, template count, HTTP response time |
+
+### Volume Tests
+
+`test_volume.py` tests performance at **4 different data scales**, each measuring query response times:
+
+| Test Class                    | Users | Templates | Columns | Measurements                           |
+|-------------------------------|-------|-----------|---------|----------------------------------------|
+| `Volume50Users10TemplatesTest`  | 50    | 500       | 2,500   | All users, all templates, user templates, HTTP view |
+| `Volume50Users30TemplatesTest`  | 50    | 1,500     | 7,500   | All users, all templates, user templates, HTTP view |
+| `Volume100Users10TemplatesTest` | 100   | 1,000     | 5,000   | All users, all templates, user templates, HTTP view |
+| `Volume100Users30TemplatesTest` | 100   | 3,000     | 15,000  | All users, all templates, user templates, HTTP view |
+
+Each volume class includes 7 tests: data verification (user count, template count, column count) + 4 timed performance assertions.
+
+**Performance results** (in-memory SQLite):
+
+| Metric                  | 50u×10t  | 50u×30t  | 100u×10t | 100u×30t |
+|-------------------------|----------|----------|----------|----------|
+| All users query         | 0.0009s  | 0.0013s  | 0.0012s  | 0.0012s  |
+| All templates query     | 0.0050s  | 0.0128s  | 0.0094s  | 0.0343s  |
+| User templates query    | 0.0013s  | 0.0012s  | 0.0011s  | 0.0009s  |
+| Template list HTTP view | 0.0091s  | 0.0185s  | 0.0084s  | 0.0196s  |
+
+### Running Tests
+
+```bash
+# Run all 44 tests
+sudo docker compose exec web python manage.py test dashboard -v 2
+
+# Run only model tests
+sudo docker compose exec web python manage.py test dashboard.tests.test_models -v 2
+
+# Run only view tests
+sudo docker compose exec web python manage.py test dashboard.tests.test_views -v 2
+
+# Run only volume/stress tests
+sudo docker compose exec web python manage.py test dashboard.tests.test_volume -v 2
+```
+
+---
+
+## Dashboard (Mockup)
+
+The dashboard page at `/` is a **static mockup**. No data is fetched from the backend.
+
+| Section            | Data Shown (Hardcoded)               | Intended Future Use          |
+|--------------------|--------------------------------------|------------------------------|
+| Stats Cards        | 12 docs, 0.45s latency, 8.4M tokens | Real-time system metrics     |
+| Recent Files Table | 3 sample files with statuses         | User's uploaded file history |
+| Drag & Drop Zone   | Visual upload area                   | File upload endpoint         |
+| Storage Widget     | 70/100 GB progress bar               | User storage usage           |
+
+---
+
+## Diagrams
+
+### Request Flow
+
+```
+Browser Request
+     │
+     ▼
+┌──────────────────────────────────────────────────────┐
+│                     Django                           │
+│                                                      │
+│  fzboard/urls.py                                     │
+│    ├── /admin/           → Django Admin              │
+│    └── /*                → dashboard/urls.py         │
+│                                                      │
+│  dashboard/urls.py                                   │
+│    ├── /                 → dashboard()         [🔒]  │
+│    ├── /login/           → login_view()              │
+│    ├── /register/        → register_view()           │
+│    ├── /logout/          → logout_view()             │
+│    ├── /formatos/        → template_list()     [🔒]  │
+│    ├── /formatos/crear/  → template_create()   [🔒]  │
+│    ├── /formatos/<pk>/   → template_detail()   [🔒]  │
+│    ├── /formatos/<pk>/eliminar/  → template_delete()   [🔒]  │
+│    └── /formatos/<pk>/descargar/ → template_download_csv() [🔒]│
+│                                                      │
+│  Template Rendering                                  │
+│    └── dashboard/templates/dashboard/*.html           │
+│         └── {% static 'css/output.css' %}            │
+│                                                      │
+└──────────────────────────────────────────────────────┘
+     │
+     ▼
+  SQLite (db.sqlite3)
+    ├── User
+    ├── TableTemplate
+    └── TemplateColumn
+```
+
+### Build Pipeline
+
+```
+┌──────────────────────┐     ┌───────────────────────┐
+│  frontend/src/       │     │  static/css/           │
+│    input.css         │────▶│    output.css          │
+│  (Tailwind source)   │     │  (Compiled CSS)        │
+└──────────────────────┘     └───────────────────────┘
+         │                             │
+         │  tailwindcss CLI            │  {% static %}
+         │  (build / watch)            │  (Django template tag)
+         ▼                             ▼
+  tailwind.config.js            HTML Templates
+  (theme, content paths)        (load compiled CSS)
+```
+
+### Docker Architecture
+
+```
+┌─────────────────────────────────────────────┐
+│  Docker Container (python:3.12-slim)        │
+│                                             │
+│  ┌─────────────┐    ┌───────────────────┐   │
+│  │ npm run     │    │ python manage.py  │   │
+│  │   watch     │    │   runserver       │   │
+│  │ (background)│    │   0.0.0.0:8000    │   │
+│  └─────────────┘    └───────────────────┘   │
+│                            │                │
+│           Port 8000 ───────┘                │
+└─────────────────────────────────────────────┘
+              │
+    Exposed → 8000:8000
+              │
+         Host Machine
+```
+
+---
+
+*Updated: 2026-03-01*
