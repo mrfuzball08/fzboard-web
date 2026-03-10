@@ -57,43 +57,10 @@
             </div>
             {% endif %}
 
-            <!-- Login Form -->
-            <form method="post" class="space-y-5">
-                {% csrf_token %}
-
-                <div class="field-group">
-                    <label for="{{ form.username.id_for_label }}" class="field-label">
-                        Nombre de Usuario
-                    </label>
-                    {{ form.username }}
-                </div>
-
-                <div class="field-group">
-                    <label for="{{ form.password.id_for_label }}" class="field-label">
-                        Contraseña
-                    </label>
-                    {{ form.password }}
-                </div>
-
-                <button type="submit" class="btn-primary group">
-                    <svg class="w-5 h-5 transition-transform group-hover:translate-x-1"
-                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-                        <polyline points="10 17 15 12 10 7" />
-                        <line x1="15" y1="12" x2="3" y2="12" />
-                    </svg>
-                    Iniciar Sesión
-                    <div
-                        class="w-5 h-5 rounded-full border-2 border-current border-t-transparent spinner group-hover:hidden">
-                    </div>
-                    <svg class="w-5 h-5 hidden group-hover:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                </button>
-            </form>
+            <!-- Login Form (Svelte Island) -->
+            <div id="svelte-login-form" data-csrf="{{ csrf_token }}"
+                data-errors="{% if form.errors %}{{ form.errors.as_json }}{% endif %}">
+            </div>
 
             <!-- Divider -->
             <div class="relative my-6">

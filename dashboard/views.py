@@ -1,4 +1,5 @@
 import csv
+from django.db import IntegrityError, transaction
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
@@ -91,7 +92,7 @@ def template_create(request):
     ColumnFormSet = modelformset_factory(
         TemplateColumn,
         form=TemplateColumnForm,
-        extra=3,
+        extra=0,
         can_delete=True,
     )
 
@@ -100,19 +101,24 @@ def template_create(request):
         formset = ColumnFormSet(request.POST, queryset=TemplateColumn.objects.none())
 
         if form.is_valid() and formset.is_valid():
-            template = form.save(commit=False)
-            template.owner = request.user
-            template.save()
+            try:
+                with transaction.atomic():
+                    template = form.save(commit=False)
+                    template.owner = request.user
+                    template.save()
 
-            for i, col_form in enumerate(formset):
-                if col_form.cleaned_data and not col_form.cleaned_data.get('DELETE', False):
-                    column = col_form.save(commit=False)
-                    column.template = template
-                    column.order = i
-                    column.save()
+                    for i, col_form in enumerate(formset):
+                        if col_form.cleaned_data and not col_form.cleaned_data.get('DELETE', False):
+                            column = col_form.save(commit=False)
+                            column.template = template
+                            column.order = i
+                            column.save()
 
-            messages.success(request, f'¡Formato "{template.name}" creado exitosamente!')
-            return redirect('template_detail', pk=template.pk)
+                messages.success(request, f'¡Formato "{template.name}" creado exitosamente!')
+                return redirect('template_detail', pk=template.pk)
+            except IntegrityError:
+                form.add_error('name', 'Ya tienes un formato con este nombre. Elige un nombre diferente.')
+                messages.error(request, 'Ya existe un formato con ese nombre.')
         else:
             messages.error(request, 'Por favor corrige los errores en el formulario.')
     else:
@@ -135,13 +141,13 @@ def template_detail(request, pk):
         TableTemplate,
         TemplateColumn,
         form=TemplateColumnForm,
-        extra=1,
+        extra=0,
         can_delete=True,
     )
 
     if request.method == 'POST':
         form = TableTemplateForm(request.POST, instance=template)
-        formset = ColumnFormSet(request.POST, instance=template)
+        formset = ColumnFormSet(request.POST, instance=template, prefix='form')
         
         if form.is_valid() and formset.is_valid():
             form.save()
@@ -152,7 +158,7 @@ def template_detail(request, pk):
             messages.error(request, 'Por favor corrige los errores en el formulario.')
     else:
         form = TableTemplateForm(instance=template)
-        formset = ColumnFormSet(instance=template)
+        formset = ColumnFormSet(instance=template, prefix='form')
 
     columns = template.columns.all()
     owner = template.owner
