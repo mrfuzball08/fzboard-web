@@ -1,8 +1,38 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Tailwind v4 — single import replaces the three @tailwind directives */
+@import "tailwindcss";
 
-/* Custom base styles */
+/* ─── Theme tokens (Catppuccin Mocha) ─────────────────────────────────────── */
+@theme {
+  /* Typography */
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-sans: "JetBrains Mono", system-ui, sans-serif;
+
+  /* Catppuccin Mocha palette */
+  --color-cat-base:     #1e1e2e;
+  --color-cat-mantle:   #181825;
+  --color-cat-crust:    #11111b;
+  --color-cat-surface0: #313244;
+  --color-cat-surface1: #45475a;
+  --color-cat-surface2: #585b70;
+  --color-cat-text:     #cdd6f4;
+  --color-cat-subtext0: #a6adc8;
+  --color-cat-overlay0: #6c7086;
+  --color-cat-mauve:    #cba6f7;
+  --color-cat-blue:     #89b4fa;
+  --color-cat-green:    #a6e3a1;
+  --color-cat-yellow:   #f9e2af;
+  --color-cat-peach:    #fab387;
+  --color-cat-red:      #f38ba8;
+  --color-cat-pink:     #f5c2e7;
+}
+
+/* ─── Content sources (replaces tailwind.config.js content array) ──────────── */
+@source "../../../templates/**/*.html";
+@source "../../../dashboard/templates/**/*.html";
+@source "../../../dashboard/forms.py";
+@source "./components/**/*.svelte";
+
+/* ─── Base ─────────────────────────────────────────────────────────────────── */
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -13,26 +43,24 @@
   }
 }
 
-/* Custom components */
+/* ─── Components ───────────────────────────────────────────────────────────── */
 @layer components {
 
-  /* Glass morphism effect for cards */
+  /* Glassmorphism card */
   .glass-card {
     @apply bg-cat-surface0/60 backdrop-blur-xl border border-cat-surface1/30 shadow-2xl;
   }
 
-
-  /* Enhanced input styles */
+  /* Form inputs */
   .form-input {
     @apply w-full px-4 py-3.5 bg-cat-mantle/50 border border-cat-surface1 rounded-xl text-cat-text placeholder-cat-overlay0/70 focus:outline-none focus:ring-2 focus:ring-cat-mauve/30 focus:border-cat-mauve transition-all duration-200 font-mono;
   }
 
-  /* Form input with hover effect */
   .form-input-hover {
     @apply w-full px-4 py-3.5 bg-cat-mantle/50 border border-cat-surface1 rounded-xl text-cat-text placeholder-cat-overlay0/70 focus:outline-none focus:ring-2 focus:ring-cat-mauve/30 focus:border-cat-mauve transition-all duration-200 font-mono hover:bg-cat-mantle hover:border-cat-surface2 hover:shadow-lg;
   }
 
-  /* Enhanced button styles */
+  /* Buttons */
   .btn-primary {
     @apply w-full bg-gradient-to-r from-cat-mauve to-cat-pink text-cat-base px-6 py-3.5 rounded-xl font-bold transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-cat-mauve/25 active:scale-95 flex items-center justify-center gap-2;
   }
@@ -41,12 +69,12 @@
     @apply w-full bg-cat-surface1 text-cat-text px-6 py-3.5 rounded-xl font-bold transition-all duration-300 hover:bg-cat-surface2 hover:scale-105 active:scale-95;
   }
 
-  /* Enhanced card styles */
+  /* Auth card */
   .auth-card {
     @apply bg-cat-surface0/60 backdrop-blur-xl border border-cat-surface1/30 shadow-2xl rounded-3xl p-8 max-w-md w-full hover:shadow-cat-mauve/10 transition-shadow duration-300;
   }
 
-  /* Logo styles */
+  /* Logo */
   .logo {
     @apply text-4xl font-bold tracking-tighter;
     background: linear-gradient(135deg, #cba6f7 0%, #f5c2e7 100%);
@@ -55,7 +83,7 @@
     background-clip: text;
   }
 
-  /* Alert/message styles */
+  /* Alerts */
   .alert-success {
     @apply p-4 rounded-xl border bg-cat-green/10 border-cat-green/30 text-cat-green backdrop-blur-sm;
   }
@@ -68,12 +96,12 @@
     @apply p-4 rounded-xl border bg-cat-blue/10 border-cat-blue/30 text-cat-blue backdrop-blur-sm;
   }
 
-  /* Link styles */
+  /* Links */
   .link-primary {
     @apply text-cat-mauve hover:text-cat-pink font-bold transition-all duration-200 hover:underline underline-offset-2;
   }
 
-  /* Form field styles */
+  /* Form field wrappers */
   .field-group {
     @apply space-y-2;
   }
@@ -89,15 +117,8 @@
 
   /* Animations */
   @keyframes float {
-
-    0%,
-    100% {
-      transform: translateY(0px);
-    }
-
-    50% {
-      transform: translateY(-10px);
-    }
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-10px); }
   }
 
   .float-animation {
@@ -105,22 +126,15 @@
   }
 
   @keyframes pulse-glow {
-
-    0%,
-    100% {
-      opacity: 1;
-    }
-
-    50% {
-      opacity: 0.8;
-    }
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.8; }
   }
 
   .pulse-glow {
     animation: pulse-glow 2s ease-in-out infinite;
   }
 
-  /* Error list styling moved from register.html */
+  /* Django error list */
   .errorlist {
     @apply mt-2 text-cat-red text-sm space-y-1;
   }
@@ -135,7 +149,7 @@
   }
 }
 
-/* Custom utilities */
+/* ─── Utilities ────────────────────────────────────────────────────────────── */
 @layer utilities {
   .text-gradient {
     background: linear-gradient(135deg, #cba6f7 0%, #f5c2e7 100%);

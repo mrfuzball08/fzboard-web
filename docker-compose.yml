@@ -1,0 +1,12 @@
+services:
+  web:
+    build: .
+    command: bash ./start.sh
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - "8000:8000"
+      - "5173:5173"
+    env_file:
+      - .env

@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FuzBoard</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/output.css' %}?v=5">
+    {% load django_vite %}
+    {% vite_asset "frontend/src/main.js" %}
 </head>
 
 <body class="min-h-screen bg-cat-base text-cat-text font-mono">
@@ -98,6 +98,9 @@
                 </div>
             </div>
         </div>
+
+        <!-- Svelte Island: reactive dashboard widgets mount here -->
+        <div id="svelte-dashboard" class="mb-8"></div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 

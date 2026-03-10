@@ -1,7 +1,8 @@
 #!/bin/bash
+set -e
 
-# tailwind watch in background
-npm run watch &
+echo "Building frontend assets..."
+bun run build
 
-# django server in foreground
+echo "Starting Django server..."
 python manage.py runserver 0.0.0.0:8000
