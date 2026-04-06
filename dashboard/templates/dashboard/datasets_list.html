@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datasets - FuzBoard</title>
+    {% load django_vite %}
+    {% vite_asset "frontend/src/main.js" %}
+</head>
+
+<body class="min-h-screen bg-cat-base text-cat-text font-mono">
+
+    {% with active_nav='datasets' %}
+    {% include 'dashboard/_navbar.html' %}
+    {% endwith %}
+
+    <main class="max-w-6xl mx-auto p-4 md:p-8">
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="mb-6 space-y-3">
+            {% for message in messages %}
+            <div
+                class="{% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %} flex items-center gap-3">
+                {% if message.tags == 'success' %}
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="shrink-0">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                {% endif %}
+                <span class="text-sm font-medium">{{ message }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="text-3xl font-bold text-cat-text">Datasets</h2>
+                <p class="text-cat-subtext0 mt-1">Gestiona tus conjuntos de datos importados.</p>
+            </div>
+            <a href="{% url 'dataset_create' %}"
+                class="bg-cat-mauve hover:bg-cat-pink text-cat-base px-5 py-2.5 rounded-lg font-bold transition-colors flex items-center gap-2 shadow-lg shadow-cat-mauve/20">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Nuevo Dataset
+            </a>
+        </header>
+
+        <!-- Search Bar -->
+        <form method="get" action="{% url 'dataset_list' %}" class="mb-6">
+            <div class="relative">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="absolute left-4 top-1/2 -translate-y-1/2 text-cat-overlay0">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <input type="text" name="q" value="{{ query }}" placeholder="Buscar datasets por nombre..."
+                    class="w-full pl-11 pr-10 py-3 bg-cat-surface0/50 border border-cat-surface1/40 rounded-xl text-cat-text text-sm placeholder-cat-overlay0/60 focus:outline-none focus:ring-2 focus:ring-cat-mauve/30 focus:border-cat-mauve/50 transition-all font-mono">
+                {% if query %}
+                <a href="{% url 'dataset_list' %}"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-cat-overlay0 hover:text-cat-red transition-colors p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </a>
+                {% endif %}
+            </div>
+        </form>
+
+        {% if datasets %}
+        <!-- Stats Bar -->
+        <div class="glass-card rounded-xl p-4 mb-6 flex items-center gap-6">
+            <div class="flex items-center gap-2 text-sm">
+                <div class="p-1.5 bg-cat-peach/10 rounded-lg text-cat-peach">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <ellipse cx="12" cy="5" rx="9" ry="3" />
+                        <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+                        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+                    </svg>
+                </div>
+                <span class="text-cat-subtext0">Total:</span>
+                <span class="font-bold text-cat-text">{{ datasets|length }} datasets</span>
+            </div>
+        </div>
+
+        <!-- Datasets Grid Layout -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for ds in datasets %}
+            <div
+                class="glass-card rounded-xl overflow-hidden hover:border-cat-mauve/40 transition-all group hover:shadow-lg hover:shadow-cat-mauve/5 flex flex-col h-full relative">
+
+                <!-- Main Card Link Area -->
+                <a href="{% url 'dataset_detail' ds.pk %}" class="flex-1 p-4 flex flex-col">
+                    <!-- Top: Icon + Name -->
+                    <div class="flex items-start gap-3 mb-3">
+                        <div
+                            class="p-2 bg-cat-peach/10 rounded-lg text-cat-peach shrink-0 group-hover:bg-cat-peach/20 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <ellipse cx="12" cy="5" rx="9" ry="3" />
+                                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+                                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+                            </svg>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3
+                                class="text-sm font-bold text-cat-text truncate group-hover:text-cat-peach transition-colors leading-snug">
+                                {{ ds.name }}
+                            </h3>
+                            <p class="text-cat-overlay0 text-[11px] mt-1">
+                                <span class="text-cat-mauve font-bold">{{ ds.template.name }}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Meta Tags (Pushed to bottom) -->
+                    <div class="flex items-center gap-2 mt-auto pt-4 flex-wrap">
+                        <!-- Status Badge -->
+                        <span class="status-badge
+                            {% if ds.status == 'empty' %}status-empty
+                            {% elif ds.status == 'ready' %}status-ready
+                            {% elif ds.status == 'importing' %}status-importing
+                            {% elif ds.status == 'failed' %}status-failed{% endif %}">
+                            {{ ds.get_status_display }}
+                        </span>
+
+                        <!-- Row Count -->
+                        <span
+                            class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-cat-blue/10 text-cat-blue text-[10px] font-bold uppercase tracking-wider">
+                            {{ ds.row_count }} filas
+                        </span>
+
+                        {% if ds.invalid_row_count > 0 %}
+                        <span
+                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-cat-red/10 text-cat-red text-[10px] font-bold">
+                            {{ ds.invalid_row_count }} errores
+                        </span>
+                        {% endif %}
+
+                        <span
+                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-cat-surface0/60 text-cat-overlay0 text-[10px] font-medium">
+                            {{ ds.updated_at|date:"d M Y" | upper }}
+                        </span>
+                    </div>
+                </a>
+
+                <!-- Card Footer Actions -->
+                <div
+                    class="flex items-center justify-end gap-1 px-4 py-2.5 border-t border-cat-surface1/30 bg-cat-mantle/30 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <a href="{% url 'dataset_upload' ds.pk %}"
+                        class="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-cat-green hover:bg-cat-green/10 rounded-md transition-all"
+                        title="Subir archivo">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="17 8 12 3 7 8" />
+                            <line x1="12" x2="12" y1="3" y2="15" />
+                        </svg>
+                        Subir
+                    </a>
+                    <a href="{% url 'dataset_delete' ds.pk %}"
+                        class="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-cat-red/70 hover:text-cat-red hover:bg-cat-red/10 rounded-md transition-all"
+                        title="Eliminar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                        </svg>
+                        Eliminar
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <!-- Empty State -->
+        <div class="flex flex-col items-center justify-center py-20">
+            <div class="p-5 bg-cat-surface0/60 rounded-2xl border border-cat-surface1/30 mb-6">
+                <svg class="text-cat-peach" xmlns="http://www.w3.org/2000/svg" width="36" height="36"
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <ellipse cx="12" cy="5" rx="9" ry="3" />
+                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold text-cat-text mb-1.5">No tienes datasets aún</h3>
+            <p class="text-cat-subtext0 text-sm text-center max-w-xs leading-relaxed">
+                Usa el botón <span class="text-cat-peach font-bold">+ Nuevo Dataset</span> para crear
+                un conjunto de datos y subir archivos CSV o Excel.
+            </p>
+        </div>
+        {% endif %}
+
+    </main>
+
+</body>
+
+</html>

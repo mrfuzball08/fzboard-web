@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes - FuzBoard</title>
+    {% load django_vite %}
+    {% vite_asset "frontend/src/main.js" %}
+</head>
+
+<body class="min-h-screen bg-cat-base text-cat-text font-mono">
+
+    {% with active_nav='reports' %}
+    {% include 'dashboard/_navbar.html' %}
+    {% endwith %}
+
+    <main class="max-w-6xl mx-auto p-4 md:p-8">
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="mb-6 space-y-3">
+            {% for message in messages %}
+            <div
+                class="{% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %} flex items-center gap-3">
+                {% if message.tags == 'success' %}
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="shrink-0">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                {% endif %}
+                <span class="text-sm font-medium">{{ message }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="text-3xl font-bold text-cat-text">Reportes</h2>
+                <p class="text-cat-subtext0 mt-1">Crea y gestiona tus reportes con gráficos y tablas.</p>
+            </div>
+            <a href="{% url 'report_create' %}"
+                class="bg-cat-mauve hover:bg-cat-pink text-cat-base px-5 py-2.5 rounded-lg font-bold transition-colors flex items-center gap-2 shadow-lg shadow-cat-mauve/20">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Nuevo Reporte
+            </a>
+        </header>
+
+        <!-- Search Bar -->
+        <form method="get" action="{% url 'report_list' %}" class="mb-6">
+            <div class="relative">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="absolute left-4 top-1/2 -translate-y-1/2 text-cat-overlay0">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <input type="text" name="q" value="{{ query }}" placeholder="Buscar reportes por nombre..."
+                    class="w-full pl-11 pr-10 py-3 bg-cat-surface0/50 border border-cat-surface1/40 rounded-xl text-cat-text text-sm placeholder-cat-overlay0/60 focus:outline-none focus:ring-2 focus:ring-cat-mauve/30 focus:border-cat-mauve/50 transition-all font-mono">
+                {% if query %}
+                <a href="{% url 'report_list' %}"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-cat-overlay0 hover:text-cat-red transition-colors p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </a>
+                {% endif %}
+            </div>
+        </form>
+
+        {% if reports %}
+        <!-- Stats Bar -->
+        <div class="glass-card rounded-xl p-4 mb-6 flex items-center gap-6">
+            <div class="flex items-center gap-2 text-sm">
+                <div class="p-1.5 bg-cat-teal/10 rounded-lg text-cat-teal">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="20" x2="18" y2="10" />
+                        <line x1="12" y1="20" x2="12" y2="4" />
+                        <line x1="6" y1="20" x2="6" y2="14" />
+                    </svg>
+                </div>
+                <span class="text-cat-subtext0">Total:</span>
+                <span class="font-bold text-cat-text">{{ reports|length }} reportes</span>
+            </div>
+        </div>
+
+        <!-- Reports Grid Layout -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for report in reports %}
+            <div
+                class="glass-card rounded-xl overflow-hidden hover:border-cat-mauve/40 transition-all group hover:shadow-lg hover:shadow-cat-mauve/5 flex flex-col h-full relative">
+
+                <!-- Main Card Link Area -->
+                <a href="{% url 'report_detail' report.pk %}" class="flex-1 p-4 flex flex-col">
+                    <!-- Top: Icon + Name -->
+                    <div class="flex items-start gap-3 mb-3">
+                        <div
+                            class="p-2 bg-cat-teal/10 rounded-lg text-cat-teal shrink-0 group-hover:bg-cat-teal/20 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <line x1="18" y1="20" x2="18" y2="10" />
+                                <line x1="12" y1="20" x2="12" y2="4" />
+                                <line x1="6" y1="20" x2="6" y2="14" />
+                            </svg>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3
+                                class="text-sm font-bold text-cat-text truncate group-hover:text-cat-teal transition-colors leading-snug">
+                                {{ report.name }}
+                            </h3>
+                            <p class="text-cat-overlay0 text-[11px] mt-1">
+                                <span class="text-cat-mauve font-bold">{{ report.dataset.name }}</span>
+                                <span class="mx-1">·</span>
+                                <span class="text-cat-overlay0">{{ report.dataset.template.name }}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    {% if report.description %}
+                    <p class="text-cat-subtext0 text-xs leading-relaxed mb-3 line-clamp-2">{{ report.description }}</p>
+                    {% endif %}
+
+                    <!-- Meta Tags -->
+                    <div class="flex items-center gap-2 mt-auto pt-4 flex-wrap">
+                        <!-- Widget Count -->
+                        <span
+                            class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-cat-teal/10 text-cat-teal text-[10px] font-bold uppercase tracking-wider">
+                            {{ report.widgets.count }} widgets
+                        </span>
+
+                        <span
+                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-cat-surface0/60 text-cat-overlay0 text-[10px] font-medium">
+                            {{ report.updated_at|date:"d M Y" | upper }}
+                        </span>
+                    </div>
+                </a>
+
+                <!-- Card Footer Actions -->
+                <div
+                    class="flex items-center justify-end gap-1 px-4 py-2.5 border-t border-cat-surface1/30 bg-cat-mantle/30 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <a href="{% url 'report_builder' report.pk %}"
+                        class="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-cat-green hover:bg-cat-green/10 rounded-md transition-all"
+                        title="Editar en Builder">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
+                        Builder
+                    </a>
+                    <a href="{% url 'report_delete' report.pk %}"
+                        class="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-cat-red/70 hover:text-cat-red hover:bg-cat-red/10 rounded-md transition-all"
+                        title="Eliminar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                        </svg>
+                        Eliminar
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <!-- Empty State -->
+        <div class="flex flex-col items-center justify-center py-20">
+            <div class="p-5 bg-cat-surface0/60 rounded-2xl border border-cat-surface1/30 mb-6">
+                <svg class="text-cat-teal" xmlns="http://www.w3.org/2000/svg" width="36" height="36"
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold text-cat-text mb-1.5">No tienes reportes aún</h3>
+            <p class="text-cat-subtext0 text-sm text-center max-w-xs leading-relaxed">
+                Usa el botón <span class="text-cat-teal font-bold">+ Nuevo Reporte</span> para crear
+                un reporte con gráficas y tablas basado en tus datasets.
+            </p>
+        </div>
+        {% endif %}
+
+    </main>
+
+</body>
+
+</html>

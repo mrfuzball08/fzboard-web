@@ -104,3 +104,90 @@ class TemplateColumnForm(forms.ModelForm):
             'data_type': 'Tipo de Dato',
             'order': '',
         }
+
+
+# ──────────────────────────────────────────────
+#  Dataset Forms
+# ──────────────────────────────────────────────
+
+class DatasetForm(forms.ModelForm):
+    """Form for creating/editing a Dataset."""
+    template = forms.ModelChoiceField(
+        queryset=None,  # Set dynamically in the view
+        widget=forms.Select(attrs={
+            'class': 'form-input-hover',
+        }),
+        label='Formato (Template)',
+    )
+
+    class Meta:
+        from .models import Dataset
+        model = Dataset
+        fields = ['name', 'template']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-input-hover',
+                'placeholder': 'Nombre del dataset',
+            }),
+        }
+        labels = {
+            'name': 'Nombre del Dataset',
+        }
+
+
+class DatasetUploadForm(forms.Form):
+    """Form for uploading a file to a dataset."""
+    file = forms.FileField(
+        label='Archivo',
+        help_text='Selecciona un archivo CSV o Excel (.xlsx, .xls)',
+        widget=forms.ClearableFileInput(attrs={
+            'accept': '.csv,.xlsx,.xls',
+            'class': 'form-input-hover',
+        }),
+    )
+    mode = forms.ChoiceField(
+        choices=[
+            ('replace', 'Reemplazar — eliminar datos existentes y subir nuevos'),
+            ('append', 'Agregar — mantener datos existentes y añadir nuevos'),
+        ],
+        initial='replace',
+        widget=forms.RadioSelect(attrs={
+            'class': 'form-radio',
+        }),
+        label='Modo de importación',
+    )
+
+
+# ──────────────────────────────────────────────
+#  Report Forms
+# ──────────────────────────────────────────────
+
+class ReportForm(forms.ModelForm):
+    """Form for creating/editing a Report."""
+    dataset = forms.ModelChoiceField(
+        queryset=None,  # Set dynamically in the view
+        widget=forms.Select(attrs={
+            'class': 'form-input-hover',
+        }),
+        label='Dataset',
+    )
+
+    class Meta:
+        from .models import Report
+        model = Report
+        fields = ['name', 'description', 'dataset']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-input-hover',
+                'placeholder': 'Nombre del reporte',
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-input-hover',
+                'placeholder': 'Descripción del reporte (opcional)',
+                'rows': 3,
+            }),
+        }
+        labels = {
+            'name': 'Nombre del Reporte',
+            'description': 'Descripción',
+        }

@@ -147,6 +147,86 @@
     content: "•";
     @apply text-cat-red font-bold;
   }
+
+  /* ─── Dataset Components ────────────────────────────────────────────────── */
+
+  /* Status badges */
+  .status-badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider;
+  }
+
+  .status-empty {
+    @apply bg-cat-overlay0/10 text-cat-overlay0;
+  }
+
+  .status-ready {
+    @apply bg-cat-green/10 text-cat-green;
+  }
+
+  .status-importing {
+    @apply bg-cat-yellow/10 text-cat-yellow;
+  }
+
+  .status-failed {
+    @apply bg-cat-red/10 text-cat-red;
+  }
+
+  /* Dropzone */
+  .dropzone {
+    @apply border-2 border-dashed border-cat-surface1/60 rounded-2xl p-10 text-center transition-all duration-300 cursor-pointer;
+  }
+
+  .dropzone:hover, .dropzone-active {
+    @apply border-cat-mauve/50 bg-cat-mauve/5;
+  }
+
+  /* Wizard steps */
+  .wizard-step {
+    @apply flex items-center gap-2 text-sm font-bold text-cat-overlay0 transition-all;
+  }
+
+  .wizard-step-active {
+    @apply text-cat-mauve;
+  }
+
+  .wizard-step-complete {
+    @apply text-cat-green;
+  }
+
+  .wizard-step-number {
+    @apply w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all;
+  }
+
+  .wizard-step-number-active {
+    @apply border-cat-mauve bg-cat-mauve/10 text-cat-mauve;
+  }
+
+  .wizard-step-number-complete {
+    @apply border-cat-green bg-cat-green/10 text-cat-green;
+  }
+
+  .wizard-step-number-pending {
+    @apply border-cat-surface1 text-cat-overlay0;
+  }
+
+  /* Data table */
+  .data-table {
+    @apply text-xs font-mono;
+  }
+
+  .data-table th {
+    @apply sticky top-0 z-10;
+  }
+
+  /* Issue cell highlight */
+  .issue-cell {
+    @apply text-cat-red bg-cat-red/5 border-b border-cat-red/20;
+  }
+
+  /* Radio button styling */
+  .form-radio {
+    @apply accent-cat-mauve;
+  }
 }
 
 /* ─── Utilities ────────────────────────────────────────────────────────────── */

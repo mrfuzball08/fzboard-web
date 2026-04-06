@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eliminar Reporte - FuzBoard</title>
+    {% load django_vite %}
+    {% vite_asset "frontend/src/main.js" %}
+</head>
+
+<body class="min-h-screen bg-cat-base text-cat-text font-mono">
+
+    {% with active_nav='reports' %}
+    {% include 'dashboard/_navbar.html' %}
+    {% endwith %}
+
+    <main class="max-w-xl mx-auto p-4 md:p-8 md:py-16">
+
+        <!-- Breadcrumb -->
+        <nav class="flex items-center gap-2 text-sm text-cat-overlay0 mb-8">
+            <a href="{% url 'report_list' %}" class="hover:text-cat-mauve transition-colors">Reportes</a>
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+            </svg>
+            <a href="{% url 'report_detail' report.pk %}" class="hover:text-cat-mauve transition-colors">{{ report.name }}</a>
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+            </svg>
+            <span class="text-cat-red font-bold">Eliminar</span>
+        </nav>
+
+        <div class="glass-card rounded-xl p-8 text-center">
+            <!-- Warning Icon -->
+            <div class="p-4 bg-cat-red/10 rounded-2xl border border-cat-red/20 mb-6 inline-block">
+                <svg class="text-cat-red" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+            </div>
+
+            <h2 class="text-xl font-bold text-cat-text mb-2">¿Eliminar Reporte?</h2>
+            <p class="text-cat-subtext0 text-sm mb-2">
+                Estás a punto de eliminar permanentemente el reporte:
+            </p>
+            <p class="text-cat-red font-bold text-lg mb-1">{{ report.name }}</p>
+            <p class="text-cat-overlay0 text-xs mb-6">
+                {{ report.widgets.count }} widgets · {{ report.dataset.name }}
+            </p>
+
+            <p class="text-cat-red/70 text-xs mb-8 bg-cat-red/5 p-3 rounded-lg border border-cat-red/10">
+                Esta acción no se puede deshacer. Todos los widgets, filtros y la configuración
+                del reporte serán eliminados permanentemente.
+            </p>
+
+            <form method="post" class="flex items-center justify-center gap-4">
+                {% csrf_token %}
+                <a href="{% url 'report_detail' report.pk %}"
+                    class="bg-cat-surface1 text-cat-text px-6 py-3 rounded-xl font-bold transition-all duration-300 hover:bg-cat-surface2 hover:scale-105 active:scale-95">
+                    Cancelar
+                </a>
+                <button type="submit"
+                    class="bg-cat-red text-cat-base px-6 py-3 rounded-xl font-bold transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-cat-red/25 active:scale-95 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    </svg>
+                    Eliminar Permanentemente
+                </button>
+            </form>
+        </div>
+
+    </main>
+
+</body>
+
+</html>

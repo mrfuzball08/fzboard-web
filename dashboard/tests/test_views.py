@@ -9,6 +9,7 @@ import time
 
 from django.test import TestCase, Client
 from django.urls import reverse
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from dashboard.models import User, TableTemplate, TemplateColumn
 
@@ -472,3 +473,240 @@ class TemplateDownloadCSVTests(TestCase):
             reverse('template_download_csv', args=[other_tpl.pk])
         )
         self.assertEqual(response.status_code, 404)
+
+
+# ──────────────────────────────────────────────
+#  Dataset View Tests
+# ──────────────────────────────────────────────
+
+class DatasetListViewTests(TestCase):
+    """Tests for the dataset list view."""
+
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username='dslistuser', password='testpass123',
+        )
+        self.template = TableTemplate.objects.create(
+            name='List Template', owner=self.user,
+        )
+        from dashboard.models import Dataset
+        for i in range(3):
+            Dataset.objects.create(
+                name=f'Dataset {i+1}',
+                owner=self.user,
+                template=self.template,
+            )
+
+    def test_dataset_list_requires_login(self):
+        response = self.client.get(reverse('dataset_list'))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('login', response.url)
+
+    def test_dataset_list_authenticated(self):
+        self.client.login(username='dslistuser', password='testpass123')
+        response = self.client.get(reverse('dataset_list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Dataset 1')
+
+    def test_dataset_list_only_own_datasets(self):
+        other = User.objects.create_user(username='otheruser', password='testpass123')
+        other_tpl = TableTemplate.objects.create(name='Other T', owner=other)
+        from dashboard.models import Dataset
+        Dataset.objects.create(name='Other Dataset', owner=other, template=other_tpl)
+        self.client.login(username='dslistuser', password='testpass123')
+        response = self.client.get(reverse('dataset_list'))
+        self.assertNotContains(response, 'Other Dataset')
+
+    def test_dataset_list_search(self):
+        self.client.login(username='dslistuser', password='testpass123')
+        response = self.client.get(reverse('dataset_list'), {'q': 'Dataset 2'})
+        self.assertContains(response, 'Dataset 2')
+        self.assertNotContains(response, 'Dataset 1')
+
+
+class DatasetCreateViewTests(TestCase):
+    """Tests for creating datasets."""
+
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username='dscreateuser', password='testpass123',
+        )
+        self.template = TableTemplate.objects.create(
+            name='Create Template', owner=self.user,
+        )
+        self.client.login(username='dscreateuser', password='testpass123')
+
+    def test_create_page_loads(self):
+        response = self.client.get(reverse('dataset_create'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_create_dataset_success(self):
+        from dashboard.models import Dataset
+        data = {'name': 'My Dataset', 'template': self.template.pk}
+        response = self.client.post(reverse('dataset_create'), data)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Dataset.objects.filter(name='My Dataset').exists())
+
+    def test_create_dataset_duplicate_name(self):
+        from dashboard.models import Dataset
+        Dataset.objects.create(name='Dup', owner=self.user, template=self.template)
+        data = {'name': 'Dup', 'template': self.template.pk}
+        response = self.client.post(reverse('dataset_create'), data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            Dataset.objects.filter(name='Dup', owner=self.user).count(), 1
+        )
+
+    def test_create_requires_login(self):
+        self.client.logout()
+        response = self.client.get(reverse('dataset_create'))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('login', response.url)
+
+
+class DatasetDetailViewTests(TestCase):
+    """Tests for viewing dataset details."""
+
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username='dsdetailuser', password='testpass123',
+        )
+        self.template = TableTemplate.objects.create(
+            name='Detail Template', owner=self.user,
+        )
+        from dashboard.models import Dataset
+        self.dataset = Dataset.objects.create(
+            name='Detail Dataset', owner=self.user, template=self.template,
+        )
+        self.client.login(username='dsdetailuser', password='testpass123')
+
+    def test_detail_page_loads(self):
+        response = self.client.get(reverse('dataset_detail', args=[self.dataset.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Detail Dataset')
+
+    def test_detail_requires_login(self):
+        self.client.logout()
+        response = self.client.get(reverse('dataset_detail', args=[self.dataset.pk]))
+        self.assertEqual(response.status_code, 302)
+
+    def test_detail_other_user_returns_404(self):
+        other = User.objects.create_user(username='other', password='testpass123')
+        other_tpl = TableTemplate.objects.create(name='O', owner=other)
+        from dashboard.models import Dataset
+        other_ds = Dataset.objects.create(name='Other DS', owner=other, template=other_tpl)
+        response = self.client.get(reverse('dataset_detail', args=[other_ds.pk]))
+        self.assertEqual(response.status_code, 404)
+
+
+class DatasetDeleteViewTests(TestCase):
+    """Tests for deleting datasets."""
+
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username='dsdeluser', password='testpass123',
+        )
+        self.template = TableTemplate.objects.create(
+            name='Del Template', owner=self.user,
+        )
+        from dashboard.models import Dataset
+        self.dataset = Dataset.objects.create(
+            name='To Delete DS', owner=self.user, template=self.template,
+        )
+        self.client.login(username='dsdeluser', password='testpass123')
+
+    def test_delete_confirmation_page(self):
+        response = self.client.get(reverse('dataset_delete', args=[self.dataset.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'To Delete DS')
+
+    def test_delete_success(self):
+        from dashboard.models import Dataset
+        response = self.client.post(reverse('dataset_delete', args=[self.dataset.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Dataset.objects.filter(pk=self.dataset.pk).exists())
+
+    def test_delete_other_user_returns_404(self):
+        other = User.objects.create_user(username='other', password='testpass123')
+        other_tpl = TableTemplate.objects.create(name='O', owner=other)
+        from dashboard.models import Dataset
+        other_ds = Dataset.objects.create(name='Other', owner=other, template=other_tpl)
+        response = self.client.post(reverse('dataset_delete', args=[other_ds.pk]))
+        self.assertEqual(response.status_code, 404)
+
+
+class DatasetUploadViewTests(TestCase):
+    """Tests for dataset upload and import execution."""
+
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username='dsuploaduser', password='testpass123',
+        )
+        self.template = TableTemplate.objects.create(
+            name='Upload Template', owner=self.user,
+        )
+        self.col_name = TemplateColumn.objects.create(
+            template=self.template, name='Name', data_type='text', order=0,
+        )
+        self.col_age = TemplateColumn.objects.create(
+            template=self.template, name='Age', data_type='integer', order=1,
+        )
+        from dashboard.models import Dataset
+        self.dataset = Dataset.objects.create(
+            name='Upload Dataset', owner=self.user, template=self.template,
+        )
+        self.client.login(username='dsuploaduser', password='testpass123')
+
+    def test_upload_page_loads(self):
+        response = self.client.get(reverse('dataset_upload', args=[self.dataset.pk]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_upload_requires_login(self):
+        self.client.logout()
+        response = self.client.get(reverse('dataset_upload', args=[self.dataset.pk]))
+        self.assertEqual(response.status_code, 302)
+
+    def test_upload_mapping_api(self):
+        """POST to mapping endpoint returns suggested mapping."""
+        import json
+        response = self.client.post(
+            reverse('dataset_upload_mapping', args=[self.dataset.pk]),
+            data=json.dumps({'headers': ['Name', 'Age']}),
+            content_type='application/json',
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn('mapping', data)
+        self.assertEqual(data['mapping']['Name'], self.col_name.id)
+        self.assertEqual(data['mapping']['Age'], self.col_age.id)
+
+    def test_full_upload_flow(self):
+        """End-to-end: upload CSV with mapping and verify import."""
+        import json
+        from dashboard.models import Dataset, DatasetRow
+
+        csv_content = b"Name,Age\nAlice,30\nBob,25\n"
+        csv_file = SimpleUploadedFile("test.csv", csv_content, content_type="text/csv")
+        mapping = {
+            'Name': self.col_name.id,
+            'Age': self.col_age.id,
+        }
+
+        response = self.client.post(
+            reverse('dataset_upload', args=[self.dataset.pk]),
+            {
+                'file': csv_file,
+                'mode': 'replace',
+                'header_mapping': json.dumps(mapping),
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+
+        self.dataset.refresh_from_db()
+        self.assertEqual(self.dataset.row_count, 2)
+        self.assertEqual(self.dataset.status, 'ready')

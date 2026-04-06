@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ dataset.name }} - FuzBoard</title>
+    {% load django_vite %}
+    {% vite_asset "frontend/src/main.js" %}
+</head>
+
+<body class="min-h-screen bg-cat-base text-cat-text font-mono">
+
+    {% with active_nav='datasets' %}
+    {% include 'dashboard/_navbar.html' %}
+    {% endwith %}
+
+    <main class="max-w-6xl mx-auto p-4 md:p-8 md:py-10">
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="mb-6 space-y-3">
+            {% for message in messages %}
+            <div
+                class="{% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %} flex items-center gap-3">
+                {% if message.tags == 'success' %}
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="shrink-0">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                {% endif %}
+                <span class="text-sm font-medium">{{ message }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Breadcrumb & Actions -->
+        <div class="flex items-center justify-between mb-8">
+            <nav class="flex items-center gap-2 text-sm text-cat-overlay0">
+                <a href="{% url 'dataset_list' %}" class="hover:text-cat-mauve transition-colors">Datasets</a>
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6" />
+                </svg>
+                <span class="text-cat-text font-bold">{{ dataset.name }}</span>
+            </nav>
+
+            <a href="{% url 'dataset_upload' dataset.pk %}"
+                class="bg-cat-green/15 hover:bg-cat-green/25 text-cat-green px-5 py-2.5 rounded-lg font-bold text-sm transition-all flex items-center gap-2 border border-cat-green/20">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" x2="12" y1="3" y2="15" />
+                </svg>
+                Subir Archivo
+            </a>
+        </div>
+
+        <!-- Dataset Header Card -->
+        <div class="glass-card rounded-xl overflow-hidden mb-6">
+            <div class="p-6">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1 min-w-0 pr-4">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="p-2 bg-cat-peach/10 rounded-lg text-cat-peach shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <ellipse cx="12" cy="5" rx="9" ry="3" />
+                                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+                                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+                                </svg>
+                            </div>
+                            <h2 class="text-2xl font-bold text-cat-text">{{ dataset.name }}</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Meta & Stats Row -->
+                <div class="flex items-center justify-between mt-5 pt-4 border-t border-cat-surface1/30">
+                    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-cat-overlay0">
+                        <span class="flex items-center gap-1.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                <line x1="3" y1="9" x2="21" y2="9" />
+                                <line x1="9" y1="21" x2="9" y2="9" />
+                            </svg>
+                            <span class="text-cat-mauve font-bold">{{ dataset.template.name }}</span>
+                        </span>
+                        <span class="flex items-center gap-1.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                <line x1="16" y1="2" x2="16" y2="6" />
+                                <line x1="8" y1="2" x2="8" y2="6" />
+                                <line x1="3" y1="10" x2="21" y2="10" />
+                            </svg>
+                            {{ dataset.created_at|date:"d M Y, H:i" }}
+                        </span>
+                        <!-- Status Badge -->
+                        <span class="status-badge
+                            {% if dataset.status == 'empty' %}status-empty
+                            {% elif dataset.status == 'ready' %}status-ready
+                            {% elif dataset.status == 'importing' %}status-importing
+                            {% elif dataset.status == 'failed' %}status-failed{% endif %}">
+                            {{ dataset.get_status_display }}
+                        </span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <a href="{% url 'dataset_delete' dataset.pk %}"
+                            class="p-2 text-cat-overlay0 hover:text-cat-red hover:bg-cat-red/10 rounded-lg transition-all border border-transparent hover:border-cat-red/20"
+                            title="Eliminar dataset">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6" />
+                                <path
+                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards Row -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="glass-card rounded-xl p-4 text-center">
+                <p class="text-2xl font-bold text-cat-text">{{ dataset.row_count }}</p>
+                <p class="text-xs text-cat-overlay0 mt-1 uppercase tracking-wider font-bold">Filas Totales</p>
+            </div>
+            <div class="glass-card rounded-xl p-4 text-center">
+                <p class="text-2xl font-bold text-cat-green">{{ dataset.row_count|add:"-"|add:dataset.invalid_row_count }}</p>
+                <p class="text-xs text-cat-overlay0 mt-1 uppercase tracking-wider font-bold">Filas Válidas</p>
+            </div>
+            <div class="glass-card rounded-xl p-4 text-center">
+                <p class="text-2xl font-bold {% if dataset.invalid_row_count > 0 %}text-cat-red{% else %}text-cat-text{% endif %}">{{ dataset.invalid_row_count }}</p>
+                <p class="text-xs text-cat-overlay0 mt-1 uppercase tracking-wider font-bold">Con Errores</p>
+            </div>
+            <div class="glass-card rounded-xl p-4 text-center">
+                <p class="text-2xl font-bold text-cat-text">{{ imports|length }}</p>
+                <p class="text-xs text-cat-overlay0 mt-1 uppercase tracking-wider font-bold">Importaciones</p>
+            </div>
+        </div>
+
+        <!-- Import History -->
+        {% if imports %}
+        <div class="glass-card rounded-xl overflow-hidden mb-6">
+            <div class="p-6 pb-4">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="p-1.5 bg-cat-blue/10 rounded-lg text-cat-blue">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="1 4 1 10 7 10" />
+                            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                        </svg>
+                    </div>
+                    <h3 class="font-bold text-sm text-cat-text">Historial de Importaciones</h3>
+                </div>
+            </div>
+            <div class="border-t border-cat-surface1/30">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="bg-cat-mantle/60">
+                            <th class="px-6 py-3 text-[10px] font-bold text-cat-overlay0 uppercase tracking-widest">Archivo</th>
+                            <th class="px-4 py-3 text-[10px] font-bold text-cat-overlay0 uppercase tracking-widest">Modo</th>
+                            <th class="px-4 py-3 text-[10px] font-bold text-cat-overlay0 uppercase tracking-widest">Estado</th>
+                            <th class="px-4 py-3 text-[10px] font-bold text-cat-overlay0 uppercase tracking-widest">Filas</th>
+                            <th class="px-4 py-3 text-[10px] font-bold text-cat-overlay0 uppercase tracking-widest">Errores</th>
+                            <th class="px-4 py-3 text-[10px] font-bold text-cat-overlay0 uppercase tracking-widest">Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for imp in imports %}
+                        <tr class="border-t border-cat-surface1/20 hover:bg-cat-mantle/30 transition-colors">
+                            <td class="px-6 py-3">
+                                <a href="{% url 'dataset_import_detail' dataset.pk imp.pk %}"
+                                    class="text-cat-text font-medium hover:text-cat-mauve transition-colors">
+                                    {{ imp.source_filename }}
+                                </a>
+                            </td>
+                            <td class="px-4 py-3">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider
+                                    {% if imp.mode == 'replace' %}bg-cat-yellow/10 text-cat-yellow{% else %}bg-cat-blue/10 text-cat-blue{% endif %}">
+                                    {{ imp.get_mode_display }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3">
+                                <span class="status-badge
+                                    {% if imp.status == 'completed' %}status-ready
+                                    {% elif imp.status == 'processing' %}status-importing
+                                    {% elif imp.status == 'failed' %}status-failed
+                                    {% else %}status-empty{% endif %}">
+                                    {{ imp.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-cat-text font-bold">{{ imp.inserted_rows }}</td>
+                            <td class="px-4 py-3 {% if imp.invalid_rows > 0 %}text-cat-red font-bold{% else %}text-cat-overlay0{% endif %}">{{ imp.invalid_rows }}</td>
+                            <td class="px-4 py-3 text-cat-overlay0 text-xs">{{ imp.created_at|date:"d M Y, H:i" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Data Preview -->
+        {% if preview_data %}
+        <div class="glass-card rounded-xl overflow-hidden">
+            <div class="p-6 pb-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <div class="p-1.5 bg-cat-green/10 rounded-lg text-cat-green">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="4 17 10 11 4 5" />
+                                <line x1="12" y1="19" x2="20" y2="19" />
+                            </svg>
+                        </div>
+                        <h3 class="font-bold text-sm text-cat-text">Vista Previa de Datos</h3>
+                    </div>
+                    <span class="text-xs text-cat-overlay0">Mostrando primeras {{ preview_data|length }} de {{ total_rows }} filas</span>
+                </div>
+            </div>
+            <div class="border-t border-cat-surface1/30 overflow-x-auto">
+                <table class="w-full text-left text-xs data-table">
+                    <thead>
+                        <tr class="bg-cat-mantle/60">
+                            <th class="px-3 py-2.5 text-[10px] font-bold text-cat-overlay0 uppercase tracking-widest w-14">#</th>
+                            {% for col in columns %}
+                            <th class="px-3 py-2.5 text-[10px] font-bold text-cat-overlay0 uppercase tracking-widest whitespace-nowrap">{{ col.name }}</th>
+                            {% endfor %}
+                            <th class="px-3 py-2.5 text-[10px] font-bold text-cat-overlay0 uppercase tracking-widest w-14">OK</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in preview_data %}
+                        <tr class="border-t border-cat-surface1/20 hover:bg-cat-mantle/30 transition-colors {% if not row.is_valid %}bg-cat-red/5{% endif %}">
+                            <td class="px-3 py-2 text-cat-overlay0 font-bold">{{ row.index }}</td>
+                            {% for cell in row.cells %}
+                            <td class="px-3 py-2 font-mono {% if cell.has_issue %}issue-cell{% else %}text-cat-text{% endif %} whitespace-nowrap max-w-[200px] truncate">
+                                {{ cell.value|default:"—" }}
+                            </td>
+                            {% endfor %}
+                            <td class="px-3 py-2 text-center">
+                                {% if row.is_valid %}
+                                <span class="text-cat-green">✓</span>
+                                {% else %}
+                                <span class="text-cat-red font-bold" title="{{ row.issue_count }} problemas">{{ row.issue_count }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% elif dataset.status == 'empty' %}
+        <!-- Empty Data State -->
+        <div class="glass-card rounded-xl p-10 text-center">
+            <div class="p-4 bg-cat-surface0/60 rounded-2xl border border-cat-surface1/30 mb-4 inline-block">
+                <svg class="text-cat-overlay0" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" x2="12" y1="3" y2="15" />
+                </svg>
+            </div>
+            <h3 class="text-base font-bold text-cat-text mb-1">Sin datos</h3>
+            <p class="text-cat-subtext0 text-sm mb-4">Sube un archivo CSV o Excel para importar datos a este dataset.</p>
+            <a href="{% url 'dataset_upload' dataset.pk %}"
+                class="inline-flex items-center gap-2 bg-gradient-to-r from-cat-mauve to-cat-pink text-cat-base px-6 py-2.5 rounded-xl font-bold transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-cat-mauve/25 active:scale-95 text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" x2="12" y1="3" y2="15" />
+                </svg>
+                Subir Archivo
+            </a>
+        </div>
+        {% endif %}
+
+    </main>
+
+</body>
+
+</html>

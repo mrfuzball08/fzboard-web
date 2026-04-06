@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Importación - {{ dataset.name }} - FuzBoard</title>
+    {% load django_vite %}
+    {% vite_asset "frontend/src/main.js" %}
+</head>
+
+<body class="min-h-screen bg-cat-base text-cat-text font-mono">
+
+    {% with active_nav='datasets' %}
+    {% include 'dashboard/_navbar.html' %}
+    {% endwith %}
+
+    <main class="max-w-4xl mx-auto p-4 md:p-8 md:py-10">
+
+        <!-- Breadcrumb -->
+        <nav class="flex items-center gap-2 text-sm text-cat-overlay0 mb-8">
+            <a href="{% url 'dataset_list' %}" class="hover:text-cat-mauve transition-colors">Datasets</a>
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+            </svg>
+            <a href="{% url 'dataset_detail' dataset.pk %}" class="hover:text-cat-mauve transition-colors">{{ dataset.name }}</a>
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+            </svg>
+            <span class="text-cat-text font-bold">{{ import_obj.source_filename }}</span>
+        </nav>
+
+        <!-- Import Summary Card -->
+        <div class="glass-card rounded-xl overflow-hidden mb-6">
+            <div class="p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="p-2 bg-cat-blue/10 rounded-lg text-cat-blue">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-cat-text">{{ import_obj.source_filename }}</h2>
+                        <p class="text-cat-overlay0 text-xs mt-0.5">{{ import_obj.created_at|date:"d M Y, H:i" }}</p>
+                    </div>
+                </div>
+
+                <!-- Stats Row -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                    <div class="bg-cat-mantle/40 rounded-xl p-4 text-center border border-cat-surface1/20">
+                        <p class="text-xl font-bold text-cat-text">{{ import_obj.total_rows }}</p>
+                        <p class="text-[10px] text-cat-overlay0 mt-1 uppercase tracking-wider font-bold">Total Filas</p>
+                    </div>
+                    <div class="bg-cat-mantle/40 rounded-xl p-4 text-center border border-cat-surface1/20">
+                        <p class="text-xl font-bold text-cat-green">{{ import_obj.inserted_rows }}</p>
+                        <p class="text-[10px] text-cat-overlay0 mt-1 uppercase tracking-wider font-bold">Insertadas</p>
+                    </div>
+                    <div class="bg-cat-mantle/40 rounded-xl p-4 text-center border border-cat-surface1/20">
+                        <p class="text-xl font-bold {% if import_obj.invalid_rows > 0 %}text-cat-red{% else %}text-cat-text{% endif %}">{{ import_obj.invalid_rows }}</p>
+                        <p class="text-[10px] text-cat-overlay0 mt-1 uppercase tracking-wider font-bold">Con Errores</p>
+                    </div>
+                    <div class="bg-cat-mantle/40 rounded-xl p-4 text-center border border-cat-surface1/20">
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider
+                            {% if import_obj.mode == 'replace' %}bg-cat-yellow/10 text-cat-yellow{% else %}bg-cat-blue/10 text-cat-blue{% endif %}">
+                            {{ import_obj.get_mode_display }}
+                        </span>
+                        <p class="text-[10px] text-cat-overlay0 mt-1.5 uppercase tracking-wider font-bold">Modo</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Header Mapping -->
+        <div class="glass-card rounded-xl overflow-hidden mb-6">
+            <div class="p-6 pb-4">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="p-1.5 bg-cat-mauve/10 rounded-lg text-cat-mauve">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13" />
+                            <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                        </svg>
+                    </div>
+                    <h3 class="font-bold text-sm text-cat-text">Mapeo de Columnas</h3>
+                </div>
+            </div>
+            <div class="border-t border-cat-surface1/30">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="bg-cat-mantle/60">
+                            <th class="px-6 py-3 text-[10px] font-bold text-cat-overlay0 uppercase tracking-widest">Columna del Archivo</th>
+                            <th class="px-4 py-3 text-center text-[10px] font-bold text-cat-overlay0 uppercase tracking-widest w-12">→</th>
+                            <th class="px-4 py-3 text-[10px] font-bold text-cat-overlay0 uppercase tracking-widest">Columna del Formato</th>
+                            <th class="px-4 py-3 text-[10px] font-bold text-cat-overlay0 uppercase tracking-widest w-24">Tipo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in mapping_display %}
+                        <tr class="border-t border-cat-surface1/20 hover:bg-cat-mantle/30 transition-colors {% if not m.is_mapped %}bg-cat-yellow/5{% endif %}">
+                            <td class="px-6 py-3 font-medium text-cat-text">{{ m.file_header }}</td>
+                            <td class="px-4 py-3 text-center text-cat-overlay0">→</td>
+                            <td class="px-4 py-3 {% if m.is_mapped %}text-cat-text{% else %}text-cat-yellow{% endif %}">
+                                {{ m.template_column }}
+                            </td>
+                            <td class="px-4 py-3">
+                                {% if m.data_type %}
+                                <span class="text-[10px] font-bold text-cat-overlay0 uppercase">{{ m.data_type }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Warnings -->
+        {% if import_obj.extra_columns_json %}
+        <div class="alert-info flex items-start gap-3 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 mt-0.5">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
+            <div>
+                <p class="text-sm font-bold mb-1">Columnas extra ignoradas:</p>
+                <p class="text-xs">{{ import_obj.extra_columns_json|join:", " }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if import_obj.missing_columns_json %}
+        <div class="alert-error flex items-start gap-3 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 mt-0.5">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            <div>
+                <p class="text-sm font-bold mb-1">Columnas del formato sin datos:</p>
+                <p class="text-xs">{{ import_obj.missing_columns_json|join:", " }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Back Link -->
+        <div class="mt-6">
+            <a href="{% url 'dataset_detail' dataset.pk %}"
+                class="text-cat-subtext0 hover:text-cat-text text-sm font-bold transition-colors flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6" />
+                </svg>
+                Volver al Dataset
+            </a>
+        </div>
+
+    </main>
+
+</body>
+
+</html>
