@@ -13,6 +13,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Create fallback .env
+        run: echo "SECRET_KEY=dummy-test-key" > .env
+
       - name: Start Docker Compose Environment
         run: docker compose up --build -d
 
