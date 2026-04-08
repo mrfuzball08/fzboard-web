@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import json
 import os
 import sys
 import tempfile
@@ -23,6 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
 TESTING = "test" in sys.argv
+TEST_RUNTIME_DIR = Path(tempfile.mkdtemp(prefix="fzboard-test-runtime-")) if TESTING else None
 
 
 # Quick-start development settings - unsuitable for production
@@ -137,9 +139,7 @@ STATIC_URL = "/static/"
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
+STATICFILES_DIRS = [path for path in [BASE_DIR / "static"] if path.exists()]
 
 DJANGO_VITE = {
     "default": {
@@ -149,6 +149,31 @@ DJANGO_VITE = {
         "static_url_prefix": "dist/",
     }
 }
+
+if TESTING:
+    test_manifest_dir = TEST_RUNTIME_DIR / "static" / "dist" / ".vite"
+    test_assets_dir = TEST_RUNTIME_DIR / "static" / "dist" / "assets"
+    test_static_root = TEST_RUNTIME_DIR / "staticfiles"
+    test_manifest_dir.mkdir(parents=True, exist_ok=True)
+    test_assets_dir.mkdir(parents=True, exist_ok=True)
+    test_static_root.mkdir(parents=True, exist_ok=True)
+
+    manifest_path = test_manifest_dir / "manifest.json"
+    manifest_path.write_text(json.dumps({
+        "frontend/src/main.js": {
+            "file": "assets/test-main.js",
+            "name": "main",
+            "src": "frontend/src/main.js",
+            "isEntry": True,
+            "css": ["assets/test-main.css"],
+        }
+    }))
+    (test_assets_dir / "test-main.js").write_text("// test asset placeholder\n")
+    (test_assets_dir / "test-main.css").write_text("/* test asset placeholder */\n")
+
+    STATIC_ROOT = test_static_root
+    DJANGO_VITE["default"]["dev_mode"] = False
+    DJANGO_VITE["default"]["manifest_path"] = manifest_path
 
 
 # Authentication settings
@@ -160,7 +185,8 @@ LOGOUT_REDIRECT_URL = '/login/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.getenv('MEDIA_ROOT_PATH', BASE_DIR / 'media')
 if TESTING:
-    MEDIA_ROOT = Path(tempfile.mkdtemp(prefix="fzboard-test-media-"))
+    MEDIA_ROOT = TEST_RUNTIME_DIR / "media"
+    MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
 
 # Session expiration
 SESSION_COOKIE_AGE = 3600
