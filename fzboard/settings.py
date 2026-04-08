@@ -10,8 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-from pathlib import Path
 import os
+import sys
+import tempfile
+from pathlib import Path
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -19,6 +21,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load environment variables from .env file
 load_dotenv(BASE_DIR / ".env")
+
+TESTING = "test" in sys.argv
 
 
 # Quick-start development settings - unsuitable for production
@@ -155,6 +159,8 @@ LOGOUT_REDIRECT_URL = '/login/'
 # Media files (uploads)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.getenv('MEDIA_ROOT_PATH', BASE_DIR / 'media')
+if TESTING:
+    MEDIA_ROOT = Path(tempfile.mkdtemp(prefix="fzboard-test-media-"))
 
 # Session expiration
 SESSION_COOKIE_AGE = 3600
