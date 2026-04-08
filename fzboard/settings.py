@@ -52,6 +52,7 @@ AUTH_USER_MODEL = 'dashboard.User'
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -86,7 +87,7 @@ WSGI_APPLICATION = "fzboard.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME": os.getenv("DATABASE_PATH", BASE_DIR / "db.sqlite3"),
     }
 }
 
@@ -127,6 +128,8 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
@@ -148,7 +151,7 @@ LOGOUT_REDIRECT_URL = '/login/'
 
 # Media files (uploads)
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = os.getenv('MEDIA_ROOT_PATH', BASE_DIR / 'media')
 
 # Session expiration
 SESSION_COOKIE_AGE = 3600

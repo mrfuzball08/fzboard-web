@@ -27,9 +27,9 @@
 }
 
 /* ─── Content sources (replaces tailwind.config.js content array) ──────────── */
-@source "../../../templates/**/*.html";
-@source "../../../dashboard/templates/**/*.html";
-@source "../../../dashboard/forms.py";
+@source "../../templates/**/*.html";
+@source "../../dashboard/templates/**/*.html";
+@source "../../dashboard/forms.py";
 @source "./components/**/*.svelte";
 
 /* ─── Base ─────────────────────────────────────────────────────────────────── */

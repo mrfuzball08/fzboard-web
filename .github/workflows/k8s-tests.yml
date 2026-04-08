@@ -1,0 +1,57 @@
+name: Kubernetes Deployment Test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test-k8s:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Start Minikube
+        uses: medyagh/setup-minikube@latest
+        with:
+          driver: docker
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Build Docker Image
+        run: |
+          eval $(minikube docker-env)
+          docker build -t mrfuzball/fzboard-web:test-ci .
+
+      - name: Lint Helm Chart
+        run: helm lint ./helm/fzboard
+
+      - name: Deploy to Minikube
+        run: |
+          helm upgrade --install fzboard ./helm/fzboard \
+            --set image.repository=mrfuzball/fzboard-web \
+            --set image.tag=test-ci \
+            --set image.pullPolicy=Never \
+            --set ingress.enabled=false
+
+      - name: Wait for Pods to be Ready
+        run: |
+          kubectl rollout status deployment/fzboard --timeout=120s
+
+      - name: Run Django Migrations
+        run: |
+          kubectl exec deployment/fzboard -- python manage.py migrate
+
+      - name: Verify Application Responsiveness
+        run: |
+          kubectl port-forward svc/fzboard 8000:8000 &
+          sleep 5
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/login/)
+          if [ "$STATUS" -ne 200 ]; then
+            echo "Failed: Expected HTTP 200, got $STATUS"
+            exit 1
+          fi
+          echo "Success: Application is responsive!"

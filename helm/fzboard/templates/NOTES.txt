@@ -1,0 +1,24 @@
+╔══════════════════════════════════════════════════════╗
+║            🎯 FzBoard deployed successfully!         ║
+╚══════════════════════════════════════════════════════╝
+
+{{- if .Values.ingress.enabled }}
+
+📌 Access your application at:
+   http://{{ .Values.ingress.hostname }}
+
+⚠️  Make sure to add the Minikube IP to /etc/hosts:
+   echo "$(minikube ip) {{ .Values.ingress.hostname }}" | sudo tee -a /etc/hosts
+
+{{- else }}
+
+📌 Forward the service port to access the application:
+   kubectl port-forward svc/{{ include "fzboard.fullname" . }} 8000:{{ .Values.service.port }}
+   Then open: http://localhost:8000
+
+{{- end }}
+
+📋 Useful commands:
+   kubectl get pods -l "app.kubernetes.io/name={{ include "fzboard.name" . }}"
+   kubectl logs -f deployment/{{ include "fzboard.fullname" . }}
+   kubectl exec -it deployment/{{ include "fzboard.fullname" . }} -- /bin/bash
