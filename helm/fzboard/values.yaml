@@ -29,7 +29,7 @@ env:
   DEBUG: "False"
   ALLOWED_HOSTS: "fzboard.local,localhost,*"
   VITE_DEV_MODE: "0"
-  DATABASE_PATH: "/app/data/db.sqlite3"
+  DATABASE_PATH: "/app/data/db/db.sqlite3"
   MEDIA_ROOT_PATH: "/app/data/media"
 
 # -- Sensitive environment variables (stored as K8s Secret)

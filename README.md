@@ -61,7 +61,8 @@ make down       # Teardown the environment completely
 ### Production Mechanics
 - **Multi-Stage Dockerfile:** The builder layers `bun` and `node_modules` solely to parse Tailwind CSS and Svelte into static minified assets, permanently stripping dependencies from the final python payload.
 - **Static Resolution:** Django natively captures the transpiled javascript bundles and proxies them alongside standard image assets utilizing `WhiteNoise`, eliminating the need for strict front-facing Nginx nodes in small architectures.
-- **Helm Persistence:** The default database (`/app/data/db.sqlite3`) maps securely to a Kubernetes `PersistentVolumeClaim` (PVC), protecting mission-critical analysis metrics from stateless container disruptions. 
+- **Helm Persistence:** The default database (`/app/data/db/db.sqlite3`) maps securely to a Kubernetes `PersistentVolumeClaim` (PVC), protecting mission-critical analysis metrics from stateless container disruptions.
+- **Automatic DB Bootstrap:** On container startup, Django creates the SQLite parent directories and applies migrations before Gunicorn starts, so a fresh Minikube volume does not fail on first login.
 
 *(For a deeper dive into the system build process, please read [`docs/architecture-pipeline.md`](docs/architecture-pipeline.md)).*
 
@@ -71,7 +72,7 @@ make down       # Teardown the environment completely
 
 Integrated Github Actions natively to maintain system integrity continuously over `main` branch cycles.
 
-- **Kubernetes E2E Testing (`k8s-tests.yml`)**: Automates a complete mirror of the production stack. It provisions a temporary Linux-based Minikube cluster, installs the Helm charts seamlessly, verifies Pod readiness wait-states, actively initializes Django Database Migrations, and runs isolated HTTP assertions over port-forwarding to rigidly validate successful styling extraction.
+- **Kubernetes E2E Testing (`k8s-tests.yml`)**: Automates a production-like Minikube deployment, waits for the pod rollout, verifies that the container can bootstrap its SQLite schema on startup, and then checks the `/login/` endpoint over port-forwarding.
 
 ---
 
@@ -131,8 +132,8 @@ Svelte components actively replace static element containers defined in template
 ## Documentation
 
 For further reading regarding local deployment commands, operations, and architectural breakdowns, reference the inner `docs/` repository files securely:
-- [`docs/local-development.md`](docs/local-development.md) - Operating Minikube and managing SQLite Migrations.
-- [`docs/architecture-pipeline.md`](docs/architecture-pipeline.md) - Deep dive into Builder states and Deployment infrastructures.
+- [`docs/local-development.md`](docs/local-development.md) - Operating Minikube, PVC-backed SQLite, and migration recovery.
+- [`docs/architecture-pipeline.md`](docs/architecture-pipeline.md) - Deep dive into the build, image bootstrap, and Helm deployment pipeline.
 
 ---
 *System Updated: April 2026*

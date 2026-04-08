@@ -41,9 +41,10 @@ jobs:
         run: |
           kubectl rollout status deployment/fzboard --timeout=120s
 
-      - name: Run Django Migrations
+      - name: Verify Startup Migration Bootstrap
         run: |
-          kubectl exec deployment/fzboard -- python manage.py migrate
+          kubectl logs deployment/fzboard --tail=200
+          kubectl logs deployment/fzboard --tail=200 | grep "Applying Django migrations..."
 
       - name: Verify Application Responsiveness
         run: |

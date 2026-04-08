@@ -15,7 +15,9 @@ make up
 1. Starts the Minikube cluster and configures your Docker daemon.
 2. Builds the latest `fzboard-web:latest` container natively using the `Dockerfile`.
 3. Loads the newly compiled image directly into Minikube's local cache.
-4. Instructs Helm to install/upgrade the server deployment (`make deploy`) and safely bypasses validation webhook timeouts.
+4. Instructs Helm to install or upgrade the server deployment (`make deploy`) and safely bypasses validation webhook timeouts.
+
+If Minikube is already running and you only changed application code, `make deploy` is usually enough.
 
 ### 2. Accessing the Application (`make forward`)
 Because the application runs natively inside the Minikube virtual network, it does not touch your laptop's standard `8000` port automatically. To access the interface, run:
@@ -38,22 +40,27 @@ make down
 FzBoard uses a local SQLite database that is mounted to the Kubernetes Pod via a `PersistentVolumeClaim` (PVC). This behaves like a persistent hard drive. However, **how you manage your cluster significantly affects the database.**
 
 ### The "Empty Database" Trap
-When you run `make down`, the PVC is often destroyed depending on Minikube's garbage collection loop. The very next time you run `make up`, an entirely fresh empty hard drive mounts.
-Because Django dynamically establishes the database file `db.sqlite3` upon attempting to serve a webpage, it will silently crash `(Server Error 500)` during authentication because the database has absolutely zero tables in it.
+When you run `make down`, the PVC may be recreated or detached depending on how Minikube tears down the environment. The next `make up` can therefore attach a completely fresh empty volume.
+To prevent the old `Server Error (500)` login failure on a blank SQLite volume, startup now follows this flow automatically:
+1. Helm mounts the PVC at `/app/data`.
+2. An init container creates `/app/data/db` and `/app/data/media` with the right ownership.
+3. The Django container runs `python manage.py migrate --noinput`.
+4. Gunicorn starts only after the schema is present.
 
 ### When to Run Migrations
-You must **manually run migrations** using `make migrate` in the following scenarios:
-1. Immediately after calling `make up` following a `make down` purge.
-2. Right after pulling fresh codebase changes containing new Django app migrations.
-3. Whenever a `500 Server Error` traceback reveals a `sqlite3.OperationalError: no such table`.
+Most of the time you do not need to run migrations manually because pod startup now applies them automatically.
+Use `make migrate` in the following scenarios:
+1. You want to re-apply schema changes in an already running pod without redeploying.
+2. You pulled new migrations into a pod that is already running.
+3. You are recovering from a failed startup and need to retry migrations directly.
 
 **How to repair the database:**
 1. Let the pod finish booting up `make up`.
-2. Apply all schema updates inside the running pod:
+2. If startup failed before migrations completed, apply schema updates inside the running pod:
 ```bash
 make migrate
 ```
-3. Because the entire database resets, you will usually need to quickly forge a fresh superuser through the shell so you can actually log in:
+3. If the database is brand new, create a user so you can log in:
 ```bash
 make shell
 # Inside the container:

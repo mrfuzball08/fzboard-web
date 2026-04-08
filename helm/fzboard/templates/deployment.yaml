@@ -18,6 +18,15 @@ spec:
         fsGroup: 1000
         runAsUser: 1000
         runAsGroup: 1000
+      initContainers:
+        - name: volume-permissions
+          image: busybox
+          command: ['sh', '-c', 'mkdir -p /app/data/db /app/data/media && chown -R 1000:1000 /app/data']
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

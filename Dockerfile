@@ -48,7 +48,9 @@ RUN pip install --no-cache-dir --upgrade pip \
 
 # Copy project code
 COPY . /app/
-RUN rm -rf /app/static/dist
+RUN rm -rf /app/static/dist /app/db.sqlite3
+RUN mkdir -p /app/data && chown -R 1000:1000 /app/data
+RUN chmod +x /app/docker-entrypoint.sh
 
 # Copy built frontend assets from builder stage
 COPY --from=builder /app/static/dist /app/static/dist
@@ -65,4 +67,4 @@ USER appuser
 EXPOSE 8000
 
 # Production: Gunicorn WSGI server
-CMD ["gunicorn", "fzboard.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
+CMD ["/app/docker-entrypoint.sh"]

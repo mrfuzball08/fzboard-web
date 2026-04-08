@@ -13,7 +13,7 @@ NAMESPACE   ?= default
 .PHONY: build push
 
 build:
-	docker build -t $(DOCKER_USER)/$(IMAGE_NAME):$(TAG) .
+	docker build --no-cache -t $(DOCKER_USER)/$(IMAGE_NAME):$(TAG) .
 
 push: build
 	docker push $(DOCKER_USER)/$(IMAGE_NAME):$(TAG)
@@ -33,6 +33,13 @@ minikube-delete:
 
 minikube-load: build
 	minikube image load $(DOCKER_USER)/$(IMAGE_NAME):$(TAG)
+
+purge: down
+	@echo "Removing image from Minikube..."
+	minikube image rm $(DOCKER_USER)/$(IMAGE_NAME):$(TAG) || true
+	@echo "Pruning Docker build cache and images..."
+	docker builder prune -af
+	docker image prune -af
 
 # ── Helm ───────────────────────────────────
 .PHONY: deploy undeploy lint template
